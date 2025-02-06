@@ -15,14 +15,6 @@ export enum PaymentStatus {
   REFUNDED = 'refunded',
 }
 
-export enum PaymentMethod {
-  CRYPTO = 'crypto',
-  TON = 'ton',
-  TELEGRAM_STARS = 'telegram_stars',
-  CREDIT_CARD = 'credit_card',
-  BANK_TRANSFER = 'bank_transfer',
-}
-
 @Entity()
 export class Payment {
   @PrimaryGeneratedColumn()
@@ -31,23 +23,20 @@ export class Payment {
   @ManyToOne(() => Order, (order) => order.id, { onDelete: 'CASCADE' })
   order: Order;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 18, scale: 8 })
   amount: number;
 
   @Column()
-  transactionId: string;
+  senderWalletAddress: string; // User's TON wallet
 
-  @Column({ type: 'enum', enum: PaymentMethod })
-  method: PaymentMethod;
+  @Column()
+  transactionId: string; // Transaction ID from TON blockchain
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 
   @Column({ nullable: true })
-  gatewayResponse?: string; // JSON response from the payment processor
-
-  @Column({ nullable: true })
-  refundedTransactionId?: string;
+  gatewayResponse?: string; // JSON response from TON blockchain
 
   @CreateDateColumn()
   createdAt: Date;

@@ -9,8 +9,4 @@ export class UpdatePaymentDto {
   @IsOptional()
   @IsString()
   gatewayResponse?: string;
-
-  @IsOptional()
-  @IsString()
-  refundedTransactionId?: string;
 }
