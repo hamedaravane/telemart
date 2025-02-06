@@ -2,7 +2,7 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity()
-export class ProductAttributeValue {
+export class ProductAttribute {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -12,8 +12,8 @@ export class ProductAttributeValue {
   product: Product;
 
   @Column()
-  attributeName: string; // e.g., "Size"
+  attributeName: string; // e.g., "Size", "Color", "Material", "Brand"
 
   @Column()
-  attributeValue: string; // e.g., "M"
+  attributeValue: string; // e.g., "42", "Red", "Cotton", "Nike"
 }

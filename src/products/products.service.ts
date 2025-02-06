@@ -7,8 +7,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product, ProductType } from './product.entity';
+import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
-import { ProductAttributeValue } from './product-attribute-value.entity';
+import { Store } from '../stores/store.entity';
 import { StoresService } from '../stores/stores.service';
 import { UsersService } from '../users/users.service';
 
@@ -19,8 +20,8 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
     @InjectRepository(ProductVariant)
     private productVariantsRepository: Repository<ProductVariant>,
-    @InjectRepository(ProductAttributeValue)
-    private productAttributesRepository: Repository<ProductAttributeValue>,
+    @InjectRepository(ProductAttribute)
+    private productAttributesRepository: Repository<ProductAttribute>,
     private storesService: StoresService,
     private usersService: UsersService,
   ) {}
@@ -38,7 +39,7 @@ export class ProductsService {
     attributes?: { name: string; value: string }[],
     variants?: { name: string; value: string; additionalPrice?: number }[],
   ): Promise<Product> {
-    const store = await this.storesService.getStoreById(storeId);
+    const store: Store = await this.storesService.getStoreById(storeId);
     if (!store)
       throw new NotFoundException(`Store with ID ${storeId} not found`);
 
@@ -64,20 +65,18 @@ export class ProductsService {
       );
     }
 
-    const product: Product = this.productsRepository.create({
+    const product = this.productsRepository.create({
       store,
       name,
       price,
       productType,
-      description: description || '',
-      imageUrl: imageUrl || '',
+      description,
+      imageUrl,
       stock: productType === ProductType.PHYSICAL ? stock : null,
       downloadLink: productType === ProductType.DIGITAL ? downloadLink : null,
-      attributes: [],
-      variants: [],
-    } as unknown as Product);
+    });
 
-    const savedProduct: Product = await this.productsRepository.save(product);
+    const savedProduct = await this.productsRepository.save(product);
 
     if (attributes) {
       for (const attr of attributes) {
@@ -85,7 +84,7 @@ export class ProductsService {
           product: savedProduct,
           attributeName: attr.name,
           attributeValue: attr.value,
-        } as ProductAttributeValue);
+        });
         await this.productAttributesRepository.save(attribute);
       }
     }
@@ -97,25 +96,12 @@ export class ProductsService {
           variantName: variant.name,
           variantValue: variant.value,
           additionalPrice: variant.additionalPrice ?? 0,
-        } as ProductVariant);
+        });
         await this.productVariantsRepository.save(variantEntity);
       }
     }
 
     return this.getProductById(savedProduct.id);
-  }
-
-  async getAllProducts(): Promise<Product[]> {
-    return this.productsRepository.find({
-      relations: ['store', 'attributes', 'variants'],
-    });
-  }
-
-  async getProductsByStore(storeId: number): Promise<Product[]> {
-    return this.productsRepository.find({
-      where: { store: { id: storeId } },
-      relations: ['store', 'attributes', 'variants'],
-    });
   }
 
   async getProductById(productId: number): Promise<Product> {
@@ -124,45 +110,9 @@ export class ProductsService {
       relations: ['store', 'attributes', 'variants'],
     });
 
-    if (!product) {
+    if (!product)
       throw new NotFoundException(`Product with ID ${productId} not found`);
-    }
 
     return product;
-  }
-
-  async updateProduct(
-    ownerId: number,
-    productId: number,
-    updateData: Partial<Product>,
-  ): Promise<Product> {
-    const product = await this.getProductById(productId);
-
-    if (
-      product.store.owner.id !== ownerId &&
-      !product.store.admins.some((admin) => admin.id === ownerId)
-    ) {
-      throw new ForbiddenException(
-        'You are not authorized to update this product.',
-      );
-    }
-
-    await this.productsRepository.update(productId, updateData);
-    return this.getProductById(productId);
-  }
-
-  async deleteProduct(ownerId: number, productId: number): Promise<void> {
-    const product = await this.getProductById(productId);
-
-    if (
-      product.store.owner.id !== ownerId &&
-      !product.store.admins.some((admin) => admin.id === ownerId)
-    ) {
-      throw new ForbiddenException(
-        'You are not authorized to delete this product.',
-      );
-    }
-
-    await this.productsRepository.delete(productId);
   }
 }

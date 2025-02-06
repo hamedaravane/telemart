@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Store } from '../stores/store.entity';
+import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
-import { ProductAttributeValue } from './product-attribute-value.entity';
 
 export enum ProductType {
   PHYSICAL = 'physical',
@@ -43,20 +43,21 @@ export class Product {
   })
   productType: ProductType;
 
-  @OneToMany(() => ProductVariant, (variant) => variant.product)
+  @OneToMany(() => ProductAttribute, (attribute) => attribute.product, {
+    cascade: true,
+  })
+  attributes: ProductAttribute[];
+
+  @OneToMany(() => ProductVariant, (variant) => variant.product, {
+    cascade: true,
+  })
   variants: ProductVariant[];
 
-  @OneToMany(
-    () => ProductAttributeValue,
-    (attributeValue) => attributeValue.product,
-  )
-  attributes: ProductAttributeValue[];
+  @Column({ nullable: true })
+  stock: number;
 
   @Column({ nullable: true })
-  stock: number; // Only for physical products
-
-  @Column({ nullable: true })
-  downloadLink: string; // Only for digital products
+  downloadLink: string;
 
   @CreateDateColumn()
   createdAt: Date;

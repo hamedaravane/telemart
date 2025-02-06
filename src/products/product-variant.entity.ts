@@ -17,6 +17,6 @@ export class ProductVariant {
   @Column()
   variantValue: string; // e.g., "M", "Red"
 
-  @Column({ nullable: true })
-  additionalPrice: number;
+  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
+  additionalPrice: number; // Optional price addition for specific variants
 }
