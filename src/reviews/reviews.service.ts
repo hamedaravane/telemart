@@ -1,81 +1,98 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Review } from './review.entity';
+import { ReviewReply } from './review-reply.entity';
+import { ReviewReport } from './review-report.entity';
 import { UsersService } from '../users/users.service';
 import { ProductsService } from '../products/products.service';
+import { Order } from '../orders/order.entity';
 
 @Injectable()
 export class ReviewsService {
   constructor(
-    @InjectRepository(Review)
-    private reviewsRepository: Repository<Review>,
+    @InjectRepository(Review) private reviewsRepository: Repository<Review>,
+    @InjectRepository(ReviewReply)
+    private repliesRepository: Repository<ReviewReply>,
+    @InjectRepository(ReviewReport)
+    private reportsRepository: Repository<ReviewReport>,
     private usersService: UsersService,
     private productsService: ProductsService,
   ) {}
 
   async createReview(
-    customerId: number,
+    buyerId: number,
     productId: number,
     rating: number,
     comment?: string,
+    images?: string[],
+    videos?: string[],
   ): Promise<Review> {
+    const buyer = await this.usersService.findByTelegramId(buyerId.toString());
+    if (!buyer)
+      throw new NotFoundException(`User with ID ${buyerId} not found`);
+
+    const product = await this.productsService.getProductById(productId);
+    if (!product)
+      throw new NotFoundException(`Product with ID ${productId} not found`);
+
+    const existingOrder = await this.reviewsRepository.manager.findOne(Order, {
+      where: { buyer, items: { product } },
+    });
+    if (!existingOrder)
+      throw new ForbiddenException(
+        `You must purchase this product before reviewing it`,
+      );
+
     if (rating < 1 || rating > 5) {
       throw new BadRequestException(`Rating must be between 1 and 5`);
     }
 
-    const customer = await this.usersService.findByTelegramId(
-      customerId.toString(),
-    );
-    if (!customer) {
-      throw new NotFoundException(`User with ID ${customerId} not found`);
-    }
-
-    const product = await this.productsService.getProductById(productId);
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${productId} not found`);
-    }
-
     const review = this.reviewsRepository.create({
-      customer,
+      buyer,
       product,
       rating,
       comment,
+      images,
+      videos,
     });
 
     return this.reviewsRepository.save(review);
   }
 
-  async getAllReviews(): Promise<Review[]> {
-    return this.reviewsRepository.find({ relations: ['customer', 'product'] });
-  }
-
-  async getReviewsByProduct(productId: number): Promise<Review[]> {
-    return this.reviewsRepository.find({
-      where: { product: { id: productId } },
-      relations: ['customer', 'product'],
-    });
-  }
-
-  async getReviewById(reviewId: number): Promise<Review> {
+  async addReviewReply(
+    sellerId: number,
+    reviewId: number,
+    replyText: string,
+  ): Promise<ReviewReply> {
     const review = await this.reviewsRepository.findOne({
       where: { id: reviewId },
-      relations: ['customer', 'product'],
+      relations: ['product'],
     });
-    if (!review) {
-      throw new NotFoundException(`Review with ID ${reviewId} not found`);
-    }
-    return review;
-  }
+    if (!review) throw new NotFoundException(`Review not found`);
 
-  async deleteReview(reviewId: number): Promise<void> {
-    const result = await this.reviewsRepository.delete(reviewId);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Review with ID ${reviewId} not found`);
+    const seller = await this.usersService.findByTelegramId(
+      sellerId.toString(),
+    );
+    if (!seller) throw new NotFoundException(`Seller not found`);
+
+    if (review.product.store.owner.id !== seller.id) {
+      throw new ForbiddenException(
+        `Only the store owner can reply to this review`,
+      );
     }
+
+    const reply = this.repliesRepository.create({
+      review,
+      seller,
+      replyText,
+    });
+
+    return this.repliesRepository.save(reply);
   }
 }
