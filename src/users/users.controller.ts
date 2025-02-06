@@ -1,30 +1,36 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './user.entity';
+import { User, UserRole } from './user.entity';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Get()
-  async getAllUsers(): Promise<User[]> {
-    return this.usersService.getAllUsers();
+  @Post()
+  async createUser(
+    @Body('telegramId') telegramId: string,
+    @Body('name') name: string,
+    @Body('role') role?: UserRole,
+  ): Promise<User> {
+    return this.usersService.createUser(telegramId, name, role);
   }
 
   @Get(':telegramId')
   async getUserByTelegramId(
     @Param('telegramId') telegramId: string,
-  ): Promise<User | null> {
+  ): Promise<User> {
     return this.usersService.findByTelegramId(telegramId);
   }
 
-  @Post()
-  async createUser(
-    @Body('telegramId') telegramId: string,
-    @Body('name') name: string,
-    @Body('phoneNumber') phoneNumber?: string,
-    @Body('email') email?: string,
+  @Patch('upgrade/:telegramId')
+  async upgradeToSeller(
+    @Param('telegramId') telegramId: string,
   ): Promise<User> {
-    return this.usersService.createUser(telegramId, name, phoneNumber, email);
+    return this.usersService.upgradeToSeller(telegramId);
+  }
+
+  @Get()
+  async getAllUsers(): Promise<User[]> {
+    return this.usersService.getAllUsers();
   }
 }
