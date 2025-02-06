@@ -6,6 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -14,11 +16,15 @@ export class UsersService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async createUser(
-    telegramId: string,
-    name: string,
-    role: UserRole = UserRole.BUYER,
-  ): Promise<User> {
+  async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const {
+      telegramId,
+      name,
+      role = UserRole.BUYER,
+      phoneNumber,
+      email,
+    } = createUserDto;
+
     const existingUser = await this.usersRepository.findOne({
       where: { telegramId },
     });
@@ -33,6 +39,8 @@ export class UsersService {
       telegramId,
       name,
       role,
+      phoneNumber,
+      email,
     });
 
     return this.usersRepository.save(user);
@@ -66,5 +74,16 @@ export class UsersService {
 
   async getAllUsers(): Promise<User[]> {
     return this.usersRepository.find({ relations: ['stores', 'orders'] });
+  }
+
+  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    Object.assign(user, updateUserDto);
+    return this.usersRepository.save(user);
   }
 }

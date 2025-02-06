@@ -1,18 +1,26 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User, UserRole } from './user.entity';
+import { User } from './user.entity';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
-  async createUser(
-    @Body('telegramId') telegramId: string,
-    @Body('name') name: string,
-    @Body('role') role?: UserRole,
-  ): Promise<User> {
-    return this.usersService.createUser(telegramId, name, role);
+  @UsePipes(new ValidationPipe())
+  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
+    return this.usersService.createUser(createUserDto);
   }
 
   @Get(':telegramId')
@@ -27,6 +35,15 @@ export class UsersController {
     @Param('telegramId') telegramId: string,
   ): Promise<User> {
     return this.usersService.upgradeToSeller(telegramId);
+  }
+
+  @Patch(':id')
+  @UsePipes(new ValidationPipe())
+  async updateUser(
+    @Param('id') id: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    return this.usersService.updateUser(id, updateUserDto);
   }
 
   @Get()
