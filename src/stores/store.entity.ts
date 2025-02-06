@@ -86,10 +86,10 @@ export class Store {
   name: string;
 
   @Column({ nullable: true })
-  logoUrl: string;
+  logoUrl?: string;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @Column({
     type: 'enum',
@@ -115,25 +115,25 @@ export class Store {
   reviews: Review[];
 
   @Column({ nullable: true })
-  contactNumber: string;
+  contactNumber?: string;
 
   @Column({ nullable: true })
-  email: string;
+  email?: string;
 
   @Column({ nullable: true })
-  address: string;
+  address?: string;
 
   @Column({ nullable: true })
-  socialMediaLinks: string;
+  socialMediaLinks?: string;
 
   @Column({ nullable: true })
-  bankAccountDetails: string;
+  bankAccountDetails?: string;
 
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 5.0 })
   reputation: number;
 
   @Column({ nullable: true })
-  workingHours: string;
+  workingHours?: string;
 
   @CreateDateColumn()
   createdAt: Date;

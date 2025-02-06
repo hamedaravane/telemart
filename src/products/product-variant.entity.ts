@@ -12,11 +12,11 @@ export class ProductVariant {
   product: Product;
 
   @Column()
-  variantName: string; // e.g., "Size", "Color"
+  variantName: string;
 
   @Column()
-  variantValue: string; // e.g., "M", "Red"
+  variantValue: string;
 
   @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
-  additionalPrice: number; // Optional price addition for specific variants
+  additionalPrice?: number;
 }

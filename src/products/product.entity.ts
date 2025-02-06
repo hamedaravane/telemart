@@ -28,7 +28,7 @@ export class Product {
   price: number;
 
   @Column({ nullable: true })
-  description: string;
+  description?: string;
 
   @Column()
   imageUrl: string;
@@ -45,19 +45,21 @@ export class Product {
 
   @OneToMany(() => ProductAttribute, (attribute) => attribute.product, {
     cascade: true,
+    eager: true,
   })
   attributes: ProductAttribute[];
 
   @OneToMany(() => ProductVariant, (variant) => variant.product, {
     cascade: true,
+    eager: true,
   })
   variants: ProductVariant[];
 
   @Column({ nullable: true })
-  stock: number;
+  downloadLink?: string;
 
   @Column({ nullable: true })
-  downloadLink: string;
+  stock?: number;
 
   @CreateDateColumn()
   createdAt: Date;

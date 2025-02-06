@@ -32,20 +32,22 @@ export class ProductsService {
     name: string,
     price: number,
     productType: ProductType,
-    description?: string,
-    imageUrl?: string,
+    description: string = '',
+    imageUrl: string,
     stock?: number,
     downloadLink?: string,
     attributes?: { name: string; value: string }[],
     variants?: { name: string; value: string; additionalPrice?: number }[],
   ): Promise<Product> {
     const store: Store = await this.storesService.getStoreById(storeId);
-    if (!store)
+    if (!store) {
       throw new NotFoundException(`Store with ID ${storeId} not found`);
+    }
 
     const owner = await this.usersService.findByTelegramId(ownerId.toString());
-    if (!owner)
+    if (!owner) {
       throw new NotFoundException(`User with ID ${ownerId} not found`);
+    }
 
     if (
       store.owner.id !== owner.id &&
@@ -65,7 +67,7 @@ export class ProductsService {
       );
     }
 
-    const product = this.productsRepository.create({
+    const product: Product = this.productsRepository.create({
       store,
       name,
       price,
@@ -76,43 +78,37 @@ export class ProductsService {
       downloadLink: productType === ProductType.DIGITAL ? downloadLink : null,
     });
 
+    if (attributes && attributes.length > 0) {
+      product.attributes = attributes.map((attr) => {
+        const attribute = new ProductAttribute();
+        attribute.attributeName = attr.name;
+        attribute.attributeValue = attr.value;
+        return attribute;
+      });
+    }
+
+    if (variants && variants.length > 0) {
+      product.variants = variants.map((variant) => {
+        const variantEntity = new ProductVariant();
+        variantEntity.variantName = variant.name;
+        variantEntity.variantValue = variant.value;
+        variantEntity.additionalPrice = variant.additionalPrice ?? 0;
+        return variantEntity;
+      });
+    }
+
     const savedProduct = await this.productsRepository.save(product);
-
-    if (attributes) {
-      for (const attr of attributes) {
-        const attribute = this.productAttributesRepository.create({
-          product: savedProduct,
-          attributeName: attr.name,
-          attributeValue: attr.value,
-        });
-        await this.productAttributesRepository.save(attribute);
-      }
-    }
-
-    if (variants) {
-      for (const variant of variants) {
-        const variantEntity = this.productVariantsRepository.create({
-          product: savedProduct,
-          variantName: variant.name,
-          variantValue: variant.value,
-          additionalPrice: variant.additionalPrice ?? 0,
-        });
-        await this.productVariantsRepository.save(variantEntity);
-      }
-    }
-
     return this.getProductById(savedProduct.id);
   }
 
   async getProductById(productId: number): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { id: productId },
-      relations: ['store', 'attributes', 'variants'],
+      relations: ['store'],
     });
-
-    if (!product)
+    if (!product) {
       throw new NotFoundException(`Product with ID ${productId} not found`);
-
+    }
     return product;
   }
 }

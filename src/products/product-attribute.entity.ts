@@ -12,8 +12,8 @@ export class ProductAttribute {
   product: Product;
 
   @Column()
-  attributeName: string; // e.g., "Size", "Color", "Material", "Brand"
+  attributeName: string;
 
   @Column()
-  attributeValue: string; // e.g., "42", "Red", "Cotton", "Nike"
+  attributeValue: string;
 }
