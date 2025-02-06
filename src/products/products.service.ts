@@ -68,14 +68,16 @@ export class ProductsService {
     }
 
     const product: Product = this.productsRepository.create({
-      store,
       name,
       price,
-      productType,
       description,
       imageUrl,
-      stock: productType === ProductType.PHYSICAL ? stock : null,
-      downloadLink: productType === ProductType.DIGITAL ? downloadLink : null,
+      store,
+      productType,
+      variants,
+      downloadLink:
+        productType === ProductType.DIGITAL ? downloadLink : undefined,
+      stock: productType === ProductType.PHYSICAL ? stock : undefined,
     });
 
     if (attributes && attributes.length > 0) {
@@ -101,14 +103,66 @@ export class ProductsService {
     return this.getProductById(savedProduct.id);
   }
 
+  async getAllProducts(): Promise<Product[]> {
+    return this.productsRepository.find({
+      relations: ['store', 'attributes', 'variants'],
+    });
+  }
+
+  async getProductsByStore(storeId: number): Promise<Product[]> {
+    return this.productsRepository.find({
+      where: { store: { id: storeId } },
+      relations: ['store', 'attributes', 'variants'],
+    });
+  }
+
   async getProductById(productId: number): Promise<Product> {
     const product = await this.productsRepository.findOne({
       where: { id: productId },
-      relations: ['store'],
+      relations: ['store', 'attributes', 'variants'],
     });
+
     if (!product) {
       throw new NotFoundException(`Product with ID ${productId} not found`);
     }
+
     return product;
+  }
+
+  async updateProduct(
+    ownerId: number,
+    productId: number,
+    updateData: Partial<Product>,
+  ): Promise<Product> {
+    const product = await this.getProductById(productId);
+
+    if (
+      product &&
+      product.store.owner.id !== ownerId &&
+      !product.store.admins.some((admin) => admin.id === ownerId)
+    ) {
+      throw new ForbiddenException(
+        'You are not authorized to update this product.',
+      );
+    }
+
+    await this.productsRepository.update(productId, updateData);
+    return this.getProductById(productId);
+  }
+
+  async deleteProduct(ownerId: number, productId: number): Promise<void> {
+    const product = await this.getProductById(productId);
+
+    if (
+      product &&
+      product.store.owner.id !== ownerId &&
+      !product.store.admins.some((admin) => admin.id === ownerId)
+    ) {
+      throw new ForbiddenException(
+        'You are not authorized to delete this product.',
+      );
+    }
+
+    await this.productsRepository.delete(productId);
   }
 }

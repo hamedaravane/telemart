@@ -9,6 +9,7 @@ import {
 import { Store } from '../stores/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
+import { Review } from '../reviews/review.entity';
 
 export enum ProductType {
   PHYSICAL = 'physical',
@@ -54,6 +55,9 @@ export class Product {
     eager: true,
   })
   variants: ProductVariant[];
+
+  @OneToMany(() => Review, (review) => review.product)
+  reviews: Review[];
 
   @Column({ nullable: true })
   downloadLink?: string;
