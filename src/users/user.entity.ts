@@ -1,4 +1,5 @@
 import {
+  BeforeInsert,
   Column,
   CreateDateColumn,
   Entity,
@@ -9,6 +10,7 @@ import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
 import { Store } from '../stores/store.entity';
 import { Payment } from '../payments/payment.entity';
+import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
   BUYER = 'buyer',
@@ -27,23 +29,19 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
+  @Column({ unique: true, nullable: true })
   phoneNumber: string;
 
-  @Column({ nullable: true })
+  @Column({ unique: true, nullable: true })
   email: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-    default: UserRole.BUYER,
-  })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.BUYER })
   role: UserRole;
 
-  @OneToMany(() => Order, (order) => order.customer)
+  @OneToMany(() => Order, (order) => order.buyer)
   orders: Order[];
 
-  @OneToMany(() => Review, (review) => review.customer)
+  @OneToMany(() => Review, (review) => review.buyer)
   reviews: Review[];
 
   @OneToMany(() => Store, (store) => store.owner)
@@ -54,4 +52,14 @@ export class User {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  password: string;
+
+  @BeforeInsert()
+  async hashPassword() {
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, 10);
+    }
+  }
 }
