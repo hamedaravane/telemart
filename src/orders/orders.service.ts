@@ -6,51 +6,34 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order, OrderStatus } from './order.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderItem } from './order-item.entity';
-import { OrderShipment } from './order-shipment.entity';
-import { Product } from '../products/product.entity';
-import { UsersService } from '../users/users.service';
 
 @Injectable()
 export class OrdersService {
   constructor(
-    @InjectRepository(Order) private ordersRepository: Repository<Order>,
+    @InjectRepository(Order)
+    private ordersRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
-    @InjectRepository(OrderShipment)
-    private orderShipmentsRepository: Repository<OrderShipment>,
-    private usersService: UsersService,
   ) {}
 
-  async placeOrder(
-    buyerId: number,
-    items: { productId: number; quantity: number }[],
-    shippingAddress?: string,
-  ): Promise<Order> {
-    const buyer = await this.usersService.findByTelegramId(buyerId.toString());
-    if (!buyer)
-      throw new NotFoundException(`User with ID ${buyerId} not found`);
+  async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
+    const { buyerId, items, shippingAddress, status } = createOrderDto;
 
-    if (items.length === 0)
+    if (!items.length) {
       throw new BadRequestException('An order must contain at least one item.');
+    }
 
     let totalAmount = 0;
     const orderItems: OrderItem[] = [];
 
     for (const item of items) {
-      const product = await this.ordersRepository.manager.findOne(Product, {
-        where: { id: item.productId },
-      });
-
-      if (!product)
-        throw new NotFoundException(
-          `Product with ID ${item.productId} not found`,
-        );
-
       const orderItem = this.orderItemsRepository.create({
-        product,
+        product: { id: item.productId },
         quantity: item.quantity,
-        totalPrice: product.price * item.quantity,
+        totalPrice: 0,
       });
 
       totalAmount += orderItem.totalPrice;
@@ -58,13 +41,42 @@ export class OrdersService {
     }
 
     const order = this.ordersRepository.create({
-      buyer,
-      status: OrderStatus.PENDING,
+      buyer: { id: buyerId },
+      status: status || OrderStatus.PENDING,
       items: orderItems,
       totalAmount,
       shippingAddress,
     });
 
     return this.ordersRepository.save(order);
+  }
+
+  async getOrderById(id: number): Promise<Order> {
+    const order = await this.ordersRepository.findOne({
+      where: { id },
+      relations: ['buyer', 'items', 'shipments'],
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order with ID ${id} not found`);
+    }
+
+    return order;
+  }
+
+  async updateOrder(
+    id: number,
+    updateOrderDto: UpdateOrderDto,
+  ): Promise<Order> {
+    const order = await this.getOrderById(id);
+
+    Object.assign(order, updateOrderDto);
+    return this.ordersRepository.save(order);
+  }
+
+  async getAllOrders(): Promise<Order[]> {
+    return this.ordersRepository.find({
+      relations: ['buyer', 'items', 'shipments'],
+    });
   }
 }

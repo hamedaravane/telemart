@@ -1,62 +1,44 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
   Post,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { Order, OrderStatus } from './order.entity';
+import { Order } from './order.entity';
+import { CreateOrderDto } from './dto/create-order.dto';
+import { UpdateOrderDto } from './dto/update-order.dto';
 
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  // Create a new order
   @Post()
-  async createOrder(
-    @Body('customerId') customerId: number,
-    @Body('productId') productId: number,
-    @Body('quantity') quantity: number,
-  ): Promise<Order> {
-    return this.ordersService.createOrder(customerId, productId, quantity);
+  @UsePipes(new ValidationPipe())
+  async createOrder(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
+    return this.ordersService.createOrder(createOrderDto);
   }
 
-  // Get all orders
-  @Get()
-  async getAllOrders(): Promise<Order[]> {
-    return this.ordersService.getAllOrders();
-  }
-
-  // Get orders by customer ID
-  @Get('customer/:customerId')
-  async getOrdersByCustomer(
-    @Param('customerId') customerId: number,
-  ): Promise<Order[]> {
-    return this.ordersService.getOrdersByCustomer(customerId);
-  }
-
-  // Get an order by ID
   @Get(':id')
   async getOrderById(@Param('id') id: number): Promise<Order> {
     return this.ordersService.getOrderById(id);
   }
 
-  // Update order status
   @Patch(':id')
-  async updateOrderStatus(
+  @UsePipes(new ValidationPipe())
+  async updateOrder(
     @Param('id') id: number,
-    @Body('status') status: OrderStatus,
+    @Body() updateOrderDto: UpdateOrderDto,
   ): Promise<Order> {
-    return this.ordersService.updateOrderStatus(id, status);
+    return this.ordersService.updateOrder(id, updateOrderDto);
   }
 
-  // Delete an order
-  @Delete(':id')
-  async deleteOrder(@Param('id') id: number): Promise<{ message: string }> {
-    await this.ordersService.deleteOrder(id);
-    return { message: 'Order deleted successfully' };
+  @Get()
+  async getAllOrders(): Promise<Order[]> {
+    return this.ordersService.getAllOrders();
   }
 }
