@@ -8,7 +8,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Product } from './product.entity';
+import { Product, ProductType } from './product.entity';
 import { StoresService } from '../stores/stores.service';
 
 @Controller('products')
@@ -18,22 +18,27 @@ export class ProductsController {
     private readonly storesService: StoresService,
   ) {}
 
-  // Create a new product
   @Post()
   async createProduct(
     @Body('storeId') storeId: number,
     @Body('name') name: string,
     @Body('price') price: number,
-    @Body('imageUrl') imageUrl: string,
+    @Body('productType') productType: ProductType,
     @Body('description') description?: string,
-    @Body('attributes') attributes?: any,
+    @Body('imageUrl') imageUrl?: string,
+    @Body('stock') stock?: number,
+    @Body('downloadLink') downloadLink?: string,
+    @Body('attributes') attributes?: { name: string; value: string }[],
   ): Promise<Product> {
     return this.productsService.createProduct(
       storeId,
       name,
       price,
-      imageUrl,
+      productType,
       description,
+      imageUrl,
+      stock,
+      downloadLink,
       attributes,
     );
   }
