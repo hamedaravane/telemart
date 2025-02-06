@@ -6,71 +6,82 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Store } from './store.entity';
-import { UsersService } from '../users/users.service';
-import { StoreCategory } from './category.entity';
+import { CreateStoreDto } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
 
 @Injectable()
 export class StoresService {
   constructor(
     @InjectRepository(Store)
     private storesRepository: Repository<Store>,
-    private usersService: UsersService,
   ) {}
 
-  async createStore(
-    ownerId: number,
-    name: string,
-    category: StoreCategory,
-    description?: string,
-    contactNumber?: string,
-    email?: string,
-    address?: string,
-  ): Promise<Store> {
-    const owner = await this.usersService.findByTelegramId(ownerId.toString());
-    if (!owner) {
-      throw new NotFoundException(`User with ID ${ownerId} not found`);
-    }
-
-    if (!Object.values(StoreCategory).includes(category)) {
-      throw new BadRequestException(`Invalid store category`);
-    }
-
-    const store = this.storesRepository.create({
-      owner,
+  async createStore(createStoreDto: CreateStoreDto): Promise<Store> {
+    const {
       name,
-      description,
       category,
       contactNumber,
       email,
       address,
-      admins: [],
+      logoUrl,
+      description,
+      socialMediaLinks,
+      bankAccountDetails,
+      reputation,
+      workingHours,
+    } = createStoreDto;
+
+    const existingStore = await this.storesRepository.findOne({
+      where: { name },
+    });
+
+    if (existingStore) {
+      throw new BadRequestException(`Store with name "${name}" already exists`);
+    }
+
+    const store = this.storesRepository.create({
+      name,
+      category,
+      contactNumber,
+      email,
+      address,
+      logoUrl,
+      description,
+      socialMediaLinks,
+      bankAccountDetails,
+      reputation,
+      workingHours,
     });
 
     return this.storesRepository.save(store);
   }
 
-  async addAdmin(storeId: number, adminId: number): Promise<Store> {
-    const store = await this.getStoreById(storeId);
-    const admin = await this.usersService.findByTelegramId(adminId.toString());
-
-    if (store.owner.id === admin.id) {
-      throw new BadRequestException(`Owner cannot be an admin`);
-    }
-
-    store.admins.push(admin);
-    return this.storesRepository.save(store);
-  }
-
-  async getStoreById(storeId: number): Promise<Store> {
+  async findById(id: number): Promise<Store> {
     const store = await this.storesRepository.findOne({
-      where: { id: storeId },
-      relations: ['owner', 'admins', 'products', 'orders', 'reviews'],
+      where: { id },
+      relations: ['owner', 'products', 'orders', 'reviews'],
     });
 
     if (!store) {
-      throw new NotFoundException(`Store with ID ${storeId} not found`);
+      throw new NotFoundException(`Store with ID ${id} not found`);
     }
 
     return store;
+  }
+
+  async updateStore(
+    id: number,
+    updateStoreDto: UpdateStoreDto,
+  ): Promise<Store> {
+    const store = await this.findById(id);
+
+    Object.assign(store, updateStoreDto);
+    return this.storesRepository.save(store);
+  }
+
+  async getAllStores(): Promise<Store[]> {
+    return this.storesRepository.find({
+      relations: ['owner', 'products', 'orders', 'reviews'],
+    });
   }
 }
