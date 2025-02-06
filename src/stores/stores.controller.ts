@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { StoresService } from './stores.service';
-import { Store, StoreCategory } from './store.entity';
+import { Store } from './store.entity';
+import { StoreCategory } from './category.entity';
 
 @Controller('stores')
 export class StoresController {
@@ -10,8 +11,8 @@ export class StoresController {
   async createStore(
     @Body('ownerId') ownerId: number,
     @Body('name') name: string,
+    @Body('category') category: StoreCategory,
     @Body('description') description?: string,
-    @Body('category') category?: StoreCategory,
     @Body('contactNumber') contactNumber?: string,
     @Body('email') email?: string,
     @Body('address') address?: string,
@@ -19,8 +20,8 @@ export class StoresController {
     return this.storesService.createStore(
       ownerId,
       name,
-      description,
       category,
+      description,
       contactNumber,
       email,
       address,
