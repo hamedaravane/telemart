@@ -1,81 +1,46 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
   Post,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Product, ProductType } from './product.entity';
-import { StoresService } from '../stores/stores.service';
+import { Product } from './product.entity';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 @Controller('products')
 export class ProductsController {
-  constructor(
-    private readonly productsService: ProductsService,
-    private readonly storesService: StoresService,
-  ) {}
+  constructor(private readonly productsService: ProductsService) {}
 
   @Post()
+  @UsePipes(new ValidationPipe())
   async createProduct(
-    @Body('storeId') storeId: number,
-    @Body('name') name: string,
-    @Body('price') price: number,
-    @Body('productType') productType: ProductType,
-    @Body('description') description?: string,
-    @Body('imageUrl') imageUrl?: string,
-    @Body('stock') stock?: number,
-    @Body('downloadLink') downloadLink?: string,
-    @Body('attributes') attributes?: { name: string; value: string }[],
+    @Body() createProductDto: CreateProductDto,
   ): Promise<Product> {
-    return this.productsService.createProduct(
-      storeId,
-      name,
-      price,
-      productType,
-      description,
-      imageUrl,
-      stock,
-      downloadLink,
-      attributes,
-    );
+    return this.productsService.createProduct(createProductDto);
   }
 
-  // Get all products
-  @Get()
-  async getAllProducts(): Promise<Product[]> {
-    return this.productsService.getAllProducts();
-  }
-
-  // Get products by store ID
-  @Get('store/:storeId')
-  async getProductsByStore(
-    @Param('storeId') storeId: number,
-  ): Promise<Product[]> {
-    return this.productsService.getProductsByStore(storeId);
-  }
-
-  // Get a product by ID
   @Get(':id')
   async getProductById(@Param('id') id: number): Promise<Product> {
     return this.productsService.getProductById(id);
   }
 
-  // Update a product
   @Patch(':id')
+  @UsePipes(new ValidationPipe())
   async updateProduct(
     @Param('id') id: number,
-    @Body() updateData: Partial<Product>,
+    @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    return this.productsService.updateProduct(id, updateData);
+    return this.productsService.updateProduct(id, updateProductDto);
   }
 
-  // Delete a product
-  @Delete(':id')
-  async deleteProduct(@Param('id') id: number): Promise<{ message: string }> {
-    await this.productsService.deleteProduct(id);
-    return { message: 'Product deleted successfully' };
+  @Get()
+  async getAllProducts(): Promise<Product[]> {
+    return this.productsService.getAllProducts();
   }
 }
