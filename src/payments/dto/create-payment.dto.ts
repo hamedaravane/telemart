@@ -1,15 +1,36 @@
-import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsNumberString,
+} from 'class-validator';
 
 export class CreatePaymentDto {
-  @IsNumber()
-  @Min(0.00000001, { message: 'Amount must be at least 0.00000001 TON' })
-  amount: number;
-
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  senderWalletAddress: string;
+  orderId?: string;
 
-  @IsString()
   @IsNotEmpty()
-  transactionId: string;
+  @IsNumberString()
+  amount: string;
+
+  @IsOptional()
+  @IsString()
+  fromWalletAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  toWalletAddress?: string;
+
+  @IsOptional()
+  @IsString()
+  transactionHash?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  gasFee?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  commission?: string;
 }

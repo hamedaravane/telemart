@@ -3,13 +3,13 @@ import {
   Controller,
   Get,
   Param,
-  Patch,
+  Delete,
+  HttpException,
+  HttpStatus,
   Post,
-  UsePipes,
-  ValidationPipe,
+  Put,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-import { Payment } from './payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 
@@ -18,29 +18,36 @@ export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
-  @UsePipes(new ValidationPipe())
-  async createPayment(
-    @Body() createPaymentDto: CreatePaymentDto,
-  ): Promise<Payment> {
-    return this.paymentsService.createPayment(createPaymentDto);
-  }
-
-  @Get(':id')
-  async getPaymentById(@Param('id') id: number): Promise<Payment> {
-    return this.paymentsService.getPaymentById(id);
-  }
-
-  @Patch(':id')
-  @UsePipes(new ValidationPipe())
-  async updatePayment(
-    @Param('id') id: number,
-    @Body() updatePaymentDto: UpdatePaymentDto,
-  ): Promise<Payment> {
-    return this.paymentsService.updatePayment(id, updatePaymentDto);
+  async create(@Body() createPaymentDto: CreatePaymentDto) {
+    return await this.paymentsService.create(createPaymentDto);
   }
 
   @Get()
-  async getAllPayments(): Promise<Payment[]> {
-    return this.paymentsService.getAllPayments();
+  async findAll() {
+    return this.paymentsService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    return this.paymentsService.findOne(id);
+  }
+
+  @Put(':id')
+  async update(
+    @Param('id') id: string,
+    @Body() updatePaymentDto: UpdatePaymentDto,
+  ) {
+    try {
+      return await this.paymentsService.update(id, updatePaymentDto);
+    } catch (err) {
+      const error = err as Error;
+      throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    await this.paymentsService.remove(id);
+    return { message: 'Payment deleted successfully' };
   }
 }

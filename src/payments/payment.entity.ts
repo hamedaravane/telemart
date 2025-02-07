@@ -2,41 +2,49 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Order } from '../orders/order.entity';
 
 export enum PaymentStatus {
   PENDING = 'pending',
-  SUCCESS = 'success',
+  PROCESSING = 'PROCESSING',
+  COMPLETED = 'COMPLETED',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
 
 @Entity()
 export class Payment {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @ManyToOne(() => Order, (order) => order.id, { onDelete: 'CASCADE' })
-  order: Order;
+  @Column({ unique: true })
+  paymentId: string;
 
-  @Column({ type: 'decimal', precision: 18, scale: 8 })
-  amount: number;
+  @Column({ nullable: true })
+  orderId: string;
 
-  @Column()
-  senderWalletAddress: string;
-
-  @Column()
-  transactionId: string;
+  @Column({ type: 'bigint' })
+  amount: string;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 
   @Column({ nullable: true })
-  gatewayResponse?: string;
+  transactionHash: string;
+
+  @Column({ nullable: true })
+  fromWalletAddress: string;
+
+  @Column({ nullable: true })
+  toWalletAddress: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  gasFee: string;
+
+  @Column({ type: 'bigint', nullable: true })
+  commission: string;
 
   @CreateDateColumn()
   createdAt: Date;

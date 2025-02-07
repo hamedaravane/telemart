@@ -1,4 +1,4 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsNumberString } from 'class-validator';
 import { PaymentStatus } from '../payment.entity';
 
 export class UpdatePaymentDto {
@@ -8,5 +8,13 @@ export class UpdatePaymentDto {
 
   @IsOptional()
   @IsString()
-  gatewayResponse?: string;
+  transactionHash?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  gasFee?: string;
+
+  @IsOptional()
+  @IsNumberString()
+  commission?: string;
 }

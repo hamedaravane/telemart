@@ -1,124 +1,112 @@
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment, PaymentStatus } from './payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import axios from 'axios';
-
-export interface TonTransaction {
-  account_id: string;
-  lt: string;
-  tx_hash: string;
-  utime: number;
-
-  data: {
-    in_msg: {
-      source: string;
-      destination: string;
-      value: string;
-      message?: string;
-    };
-    out_msgs: Array<{
-      source: string;
-      destination: string;
-      value: string;
-      message?: string;
-    }>;
-  };
-}
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class PaymentsService {
+  private readonly logger = new Logger(PaymentsService.name);
+
   constructor(
     @InjectRepository(Payment)
     private paymentsRepository: Repository<Payment>,
   ) {}
 
-  async createPayment(createPaymentDto: CreatePaymentDto): Promise<Payment> {
-    const { amount, senderWalletAddress, transactionId } = createPaymentDto;
-
-    const existingPayment = await this.paymentsRepository.findOne({
-      where: { transactionId },
-    });
-
-    if (existingPayment) {
-      throw new BadRequestException(
-        `Transaction ID ${transactionId} already exists`,
-      );
-    }
-
-    const transaction = await this.verifyTransaction(
-      transactionId,
-      senderWalletAddress,
-      amount,
-    );
-
+  /**
+   * Create a new payment record. Generates a unique paymentId and sets the initial status to PENDING.
+   */
+  async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     const payment = this.paymentsRepository.create({
-      amount,
-      senderWalletAddress,
-      transactionId,
-      status: PaymentStatus.SUCCESS,
-      gatewayResponse: JSON.stringify(transaction),
+      ...createPaymentDto,
+      paymentId: uuidv4(),
+      status: PaymentStatus.PENDING,
     });
-
+    this.logger.debug(`Creating new payment with ID: ${payment.paymentId}`);
     return this.paymentsRepository.save(payment);
   }
 
-  async getPaymentById(id: number): Promise<Payment> {
-    const payment = await this.paymentsRepository.findOne({ where: { id } });
-
-    if (!payment) {
-      throw new NotFoundException(`Payment with ID ${id} not found`);
-    }
-
-    return payment;
-  }
-
-  async updatePayment(
-    id: number,
-    updatePaymentDto: UpdatePaymentDto,
-  ): Promise<Payment> {
-    const payment = await this.getPaymentById(id);
-
-    Object.assign(payment, updatePaymentDto);
-    return this.paymentsRepository.save(payment);
-  }
-
-  async getAllPayments(): Promise<Payment[]> {
+  /**
+   * Retrieve all payments.
+   */
+  async findAll(): Promise<Payment[]> {
     return this.paymentsRepository.find();
   }
 
-  private async verifyTransaction(
-    transactionId: string,
-    senderWallet: string,
-    expectedAmount: number,
-  ): Promise<TonTransaction> {
-    try {
-      const response = await axios.get(
-        `https://tonapi.io/v2/blockchain/transactions/${transactionId}`,
-      );
-      const transaction = response.data as TonTransaction;
-
-      if (transaction.data.in_msg.source !== senderWallet) {
-        throw new BadRequestException('Invalid sender wallet address');
-      }
-
-      const receivedAmount = parseFloat(transaction.data.in_msg.value) / 1e9;
-      if (receivedAmount < expectedAmount) {
-        throw new BadRequestException('Transaction amount does not match');
-      }
-
-      return transaction;
-    } catch (err) {
-      const error = err as Error;
-      throw new BadRequestException(
-        `Failed to verify transaction: ${error.message}`,
-      );
+  /**
+   * Retrieve a single payment by its primary ID.
+   */
+  async findOne(id: string): Promise<Payment> {
+    const payment = await this.paymentsRepository.findOne({ where: { id } });
+    if (!payment) {
+      throw new NotFoundException(`Payment with id ${id} not found`);
     }
+    return payment;
+  }
+
+  /**
+   * Update an existing payment record. Enforces valid state transitions.
+   */
+  async update(
+    id: string,
+    updatePaymentDto: UpdatePaymentDto,
+  ): Promise<Payment> {
+    const payment = await this.findOne(id);
+
+    if (updatePaymentDto.status) {
+      if (!this.isValidTransition(payment.status, updatePaymentDto.status)) {
+        throw new BadRequestException(
+          `Invalid state transition from ${payment.status} to ${updatePaymentDto.status}`,
+        );
+      }
+    }
+
+    Object.assign(payment, updatePaymentDto);
+    this.logger.debug(
+      `Updating payment ${payment.paymentId} to status ${payment.status}`,
+    );
+    return this.paymentsRepository.save(payment);
+  }
+
+  /**
+   * Remove a payment record.
+   */
+  async remove(id: string): Promise<void> {
+    const result = await this.paymentsRepository.delete(id);
+    if (result.affected === 0) {
+      throw new NotFoundException(`Payment with id ${id} not found`);
+    }
+  }
+
+  /**
+   * Validate whether the state transition from current to next status is allowed.
+   * For example:
+   * - PENDING can transition to PROCESSING or FAILED.
+   * - PROCESSING can transition to COMPLETED or FAILED.
+   * - FAILED can transition to REFUND.
+   */
+  private isValidTransition(
+    current: PaymentStatus,
+    next: PaymentStatus,
+  ): boolean {
+    const transitions: Record<PaymentStatus, PaymentStatus[]> = {
+      [PaymentStatus.PENDING]: [PaymentStatus.PROCESSING, PaymentStatus.FAILED],
+      [PaymentStatus.PROCESSING]: [
+        PaymentStatus.COMPLETED,
+        PaymentStatus.FAILED,
+      ],
+      [PaymentStatus.COMPLETED]: [],
+      [PaymentStatus.FAILED]: [PaymentStatus.REFUNDED],
+      [PaymentStatus.REFUNDED]: [],
+    };
+
+    return transitions[current].includes(next);
   }
 }
