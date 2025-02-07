@@ -18,7 +18,7 @@ export class Review {
   id: number;
 
   @ManyToOne(() => User, (user) => user.reviews, { onDelete: 'CASCADE' })
-  buyer: User; // Only a buyer who purchased the product can review it
+  buyer: User;
 
   @ManyToOne(() => Product, (product) => product.reviews, {
     onDelete: 'CASCADE',
@@ -26,16 +26,16 @@ export class Review {
   product: Product;
 
   @Column({ type: 'int', default: 5 })
-  rating: number; // 1 to 5 stars
+  rating: number;
 
   @Column({ type: 'text', nullable: true })
   comment: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  images: string[]; // URLs for uploaded review images
+  images: string[];
 
   @Column({ type: 'simple-array', nullable: true })
-  videos: string[]; // URLs for uploaded review videos
+  videos: string[];
 
   @OneToMany(() => ReviewReply, (reply) => reply.review, { cascade: true })
   replies: ReviewReply[];

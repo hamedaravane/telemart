@@ -17,7 +17,7 @@ export class ReviewReply {
   review: Review;
 
   @ManyToOne(() => User, { eager: true })
-  seller: User; // Only store owners or admins can reply
+  seller: User;
 
   @Column({ type: 'text' })
   replyText: string;

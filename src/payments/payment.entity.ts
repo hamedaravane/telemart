@@ -27,16 +27,16 @@ export class Payment {
   amount: number;
 
   @Column()
-  senderWalletAddress: string; // User's TON wallet
+  senderWalletAddress: string;
 
   @Column()
-  transactionId: string; // Transaction ID from TON blockchain
+  transactionId: string;
 
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 
   @Column({ nullable: true })
-  gatewayResponse?: string; // JSON response from TON blockchain
+  gatewayResponse?: string;
 
   @CreateDateColumn()
   createdAt: Date;
