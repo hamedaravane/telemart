@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Order } from './order.entity';
 
-@Entity()
+@Entity({ name: 'order_shipments' })
 export class OrderShipment {
   @PrimaryGeneratedColumn()
   id: number;
@@ -21,7 +21,7 @@ export class OrderShipment {
   @Column()
   courierService: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   deliveryEstimate: Date;
 
   @CreateDateColumn()

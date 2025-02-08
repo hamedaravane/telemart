@@ -14,7 +14,7 @@ export enum ReportReason {
   FAKE_REVIEW = 'Fake Review',
 }
 
-@Entity()
+@Entity({ name: 'review_reports' })
 export class ReviewReport {
   @PrimaryGeneratedColumn()
   id: number;

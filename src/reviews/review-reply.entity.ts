@@ -8,7 +8,7 @@ import {
 import { User } from '../users/user.entity';
 import { Review } from './review.entity';
 
-@Entity()
+@Entity({ name: 'review_replies' })
 export class ReviewReply {
   @PrimaryGeneratedColumn()
   id: number;

@@ -18,7 +18,7 @@ export enum ProductType {
   SERVICE = 'service',
 }
 
-@Entity()
+@Entity({ name: 'payments' })
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;

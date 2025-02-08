@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { OrderItem } from './order-item.entity';
@@ -22,7 +23,7 @@ export enum OrderStatus {
   REFUNDED = 'refunded',
 }
 
-@Entity()
+@Entity({ name: 'orders' })
 export class Order {
   @PrimaryGeneratedColumn()
   id: number;
@@ -53,9 +54,12 @@ export class Order {
   @Column({ nullable: true })
   shippingAddress: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'timestamp', nullable: true })
   deliveryDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -12,7 +12,7 @@ import { Product } from '../products/product.entity';
 import { ReviewReply } from './review-reply.entity';
 import { ReviewReport } from './review-report.entity';
 
-@Entity()
+@Entity({ name: 'reviews' })
 export class Review {
   @PrimaryGeneratedColumn()
   id: number;
