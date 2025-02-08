@@ -3,6 +3,7 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class TelegramAuthService {
+  /* TODO: Cache the computed secret key if the bot token never changes (minor performance gain). */
   validateTelegramData(authData: Record<string, any>): boolean {
     const { hash, ...data } = authData;
 

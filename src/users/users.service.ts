@@ -87,6 +87,7 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  /* TODO: the naming “findOrCreate” could be misleading */
   async findOrCreate(authData: Record<string, any>): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { telegramId: authData.id as string },

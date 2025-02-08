@@ -45,6 +45,7 @@ export class Store {
   @OneToMany(() => Product, (product) => product.store)
   products: Product[];
 
+  /* TODO: Revise the relation function. It should reference the property on the Order entity that links back to the store */
   @OneToMany(() => Order, (order) => order.id)
   orders: Order[];
 

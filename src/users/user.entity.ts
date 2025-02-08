@@ -50,6 +50,7 @@ export class User {
   @OneToMany(() => Store, (store) => store.owner)
   stores: Store[];
 
+  /* TODO: add a proper relation (e.g. add a user field to Payment and update both sides accordingly). */
   @OneToMany(() => Payment, (payment) => payment.paymentId)
   payments: Payment[];
 

@@ -26,7 +26,6 @@ export class StoresService {
       logoUrl,
       description,
       socialMediaLinks,
-      bankAccountDetails,
       reputation,
       workingHours,
     } = createStoreDto;
@@ -48,7 +47,6 @@ export class StoresService {
       logoUrl,
       description,
       socialMediaLinks,
-      bankAccountDetails,
       reputation,
       workingHours,
     });

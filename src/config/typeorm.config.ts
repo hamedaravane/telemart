@@ -1,6 +1,7 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 
+/* TODO: For production, set synchronize: false and adjust logging as needed. */
 export const typeOrmConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => ({

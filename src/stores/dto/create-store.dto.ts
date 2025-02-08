@@ -40,13 +40,10 @@ export class CreateStoreDto {
   @IsString()
   address?: string;
 
+  /* TODO: make sure your DTO (update & create) match that type (currently, they expect a URL string). */
   @IsOptional()
   @IsUrl({}, { message: 'Invalid social media link' })
   socialMediaLinks?: string;
-
-  @IsOptional()
-  @IsString()
-  bankAccountDetails?: string;
 
   @IsOptional()
   @IsNumber()
