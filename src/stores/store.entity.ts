@@ -7,11 +7,11 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Product } from '../products/product.entity';
 import { Order } from '../orders/order.entity';
-import { Review } from '../reviews/review.entity';
 import { StoreCategory } from './category.entity';
 
 @Entity()
@@ -19,13 +19,13 @@ export class Store {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 100 })
   name: string;
 
   @Column({ nullable: true })
   logoUrl?: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   description?: string;
 
   @Column({
@@ -45,13 +45,10 @@ export class Store {
   @OneToMany(() => Product, (product) => product.store)
   products: Product[];
 
-  @OneToMany(() => Order, (order) => order)
+  @OneToMany(() => Order, (order) => order.id)
   orders: Order[];
 
-  @OneToMany(() => Review, (review) => review.product.store)
-  reviews: Review[];
-
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 20 })
   contactNumber?: string;
 
   @Column({ nullable: true })
@@ -60,11 +57,8 @@ export class Store {
   @Column({ nullable: true })
   address?: string;
 
-  @Column({ nullable: true })
-  socialMediaLinks?: string;
-
-  @Column({ nullable: true })
-  bankAccountDetails?: string;
+  @Column({ nullable: true, type: 'simple-json' })
+  socialMediaLinks?: { [platform: string]: string };
 
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 5.0 })
   reputation: number;
@@ -74,4 +68,7 @@ export class Store {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
