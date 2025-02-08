@@ -1,99 +1,107 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Telemart
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Telemart is a Telegram Mini-App E-Commerce Platform that enables users to create and manage their online stores, sell products and services, and handle orders and payments seamlessly via the TON blockchain. With Telegram authentication, users can quickly log in without passwords, and the platform’s modular design supports multiple roles (buyer, seller, admin) for a real-life marketplace experience.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Table of Contents
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- [Features](#features)
+- [Architecture](#architecture)
+- [Technologies Used](#technologies-used)
+- [API Endpoints](#api-endpoints)
+- [Contact](#contact)
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## Features
 
-## Compile and run the project
+- **Telegram Authentication**: Log in seamlessly using Telegram (no passwords required).
+- **Multi-Role Users**: Every user can act as a buyer, seller, or both.
+- **Store Management**: Sellers can create and manage multiple stores with detailed information and social media links.
+- **Product Listings**: Create products with variants and attributes to showcase a wide range of offerings (physical, digital, or services).
+- **Order Processing**: Manage orders with multiple items from the same store, complete with shipment tracking and status updates.
+- **TON Blockchain Payments**: Fast, secure, and decentralized payments using the TON cryptocurrency.
+- **Reviews & Ratings**: Buyers can leave detailed reviews, including text, images, and videos, with support for seller replies and report functionality.
+- **Notifications (Future Implementation)**: Framework in place for sending notifications for order updates, payments, and more.
 
-```bash
-# development
-$ npm run start
+---
 
-# watch mode
-$ npm run start:dev
+## Architecture
 
-# production mode
-$ npm run start:prod
-```
+Telemart is built with a modular architecture using NestJS, which ensures scalability, maintainability, and ease of development. The core modules include:
 
-## Run tests
+- **Auth Module**: Handles Telegram authentication and data validation.
+- **Users Module**: Manages user profiles and role upgrades.
+- **Stores Module**: Enables store creation and management.
+- **Products Module**: Manages product listings, attributes, and variants.
+- **Orders Module**: Processes orders, calculates totals, and enforces that order items come from the same store.
+- **Payments Module**: Integrates with the TON blockchain for processing payments and managing state transitions.
+- **Reviews Module**: Allows buyers to leave reviews, reply, and report inappropriate content.
+- **Notifications Module**: (Stub) For future implementation of notification services.
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## Technologies Used
 
-# test coverage
-$ npm run test:cov
-```
+- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
+- **TypeORM**: An ORM that supports TypeScript and provides easy integration with PostgreSQL.
+- **PostgreSQL**: The relational database for storing project data.
+- **Telegram API**: For authenticating users via Telegram.
+- **TON Blockchain**: For decentralized, fast, and low-fee cryptocurrency payments.
+- **Class-Validator & Class-Transformer**: For validating and transforming incoming DTOs.
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## API Endpoints
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Below are some example endpoints. (Use tools like [Postman](https://www.postman.com/) or [Swagger](https://swagger.io/) for testing.)
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+- **User Authentication**
+    - `POST /users/telegram-auth` — Authenticate a Telegram user.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+- **User Management**
+    - `POST /users` — Create a new user.
+    - `GET /users/:telegramId` — Get user details by Telegram ID.
+    - `PATCH /users/upgrade/:telegramId` — Upgrade user role to seller.
+    - `PATCH /users/:id` — Update user details.
+    - `GET /users` — List all users.
 
-## Resources
+- **Store Management**
+    - `POST /stores` — Create a new store.
+    - `GET /stores/:id` — Get store details.
+    - `PATCH /stores/:id` — Update store information.
+    - `GET /stores` — List all stores.
 
-Check out a few resources that may come in handy when working with NestJS:
+- **Product Management**
+    - `POST /products` — Create a new product.
+    - `GET /products/:id` — Get product details.
+    - `PATCH /products/:id` — Update product details.
+    - `GET /products` — List all products.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+- **Order Processing**
+    - `POST /orders` — Create a new order.
+    - `GET /orders/:id` — Get order details.
+    - `PATCH /orders/:id` — Update order status/details.
+    - `GET /orders` — List all orders.
 
-## Support
+- **Payments**
+    - `POST /payments` — Create a payment.
+    - `GET /payments` — List all payments.
+    - `GET /payments/:id` — Get payment details.
+    - `PUT /payments/:id` — Update payment status/details.
+    - `DELETE /payments/:id` — Delete a payment.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- **Reviews**
+    - `POST /reviews` — Create a review.
+    - `GET /reviews/:id` — Get review details.
+    - `PATCH /reviews/:id/reply` — Add a reply to a review.
+    - `POST /reviews/:id/report` — Report a review.
+    - `GET /reviews` — List all reviews.
 
-## Stay in touch
+---
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Contact
 
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Hamed Arghavan** – [hamedaravane@gmail.com](mailto:hamedaravane@gmail.com)
+- **Project Link:** [https://github.com/hamedaravane/telemart](https://github.com/hamedaravane/telemart)
