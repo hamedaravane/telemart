@@ -9,7 +9,7 @@ output_file="output.md"
 
 find . -type f -name "*.ts" -print0 | while IFS= read -r -d '' file; do
     {
-        echo "## File: ${file}"
+        echo "- File: ${file}"
         echo ""
         echo '```typescript'
         cat "$file"
