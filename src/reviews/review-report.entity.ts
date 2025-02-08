@@ -29,7 +29,7 @@ export class ReviewReport {
   reason: ReportReason;
 
   @Column({ type: 'text', nullable: true })
-  comment: string;
+  comment?: string;
 
   @CreateDateColumn()
   reportedAt: Date;

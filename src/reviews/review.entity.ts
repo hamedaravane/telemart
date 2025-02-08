@@ -29,13 +29,13 @@ export class Review {
   rating: number;
 
   @Column({ type: 'text', nullable: true })
-  comment: string;
+  comment?: string;
 
   @Column({ type: 'simple-array', nullable: true })
-  images: string[];
+  images?: string[];
 
   @Column({ type: 'simple-array', nullable: true })
-  videos: string[];
+  videos?: string[];
 
   @OneToMany(() => ReviewReply, (reply) => reply.review, { cascade: true })
   replies: ReviewReply[];
