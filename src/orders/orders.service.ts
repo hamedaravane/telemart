@@ -10,6 +10,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderItem } from './order-item.entity';
 import { ProductsService } from '../products/products.service';
+import { Store } from '../stores/store.entity';
 
 @Injectable()
 export class OrdersService {
@@ -29,7 +30,7 @@ export class OrdersService {
     }
 
     let totalAmount = 0;
-    let orderStore = null;
+    let orderStore: Store | null = null;
     const orderItems: OrderItem[] = [];
 
     for (const item of items) {
@@ -47,6 +48,10 @@ export class OrdersService {
       });
       totalAmount += totalPrice;
       orderItems.push(orderItem);
+    }
+
+    if (!orderStore) {
+      throw new BadRequestException('Order store could not be determined.');
     }
 
     const order = this.ordersRepository.create({
