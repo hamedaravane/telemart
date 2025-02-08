@@ -1,16 +1,16 @@
 import {
-  BeforeInsert,
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
 import { Store } from '../stores/store.entity';
 import { Payment } from '../payments/payment.entity';
-import * as bcrypt from 'bcrypt';
 
 export enum UserRole {
   BUYER = 'buyer',
@@ -18,7 +18,7 @@ export enum UserRole {
   BOTH = 'both',
 }
 
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
@@ -29,14 +29,17 @@ export class User {
   @Column()
   name: string;
 
-  @Column({ unique: true, nullable: true })
-  phoneNumber: string;
+  @Column({ unique: true, nullable: true, length: 20 })
+  phoneNumber?: string;
 
   @Column({ unique: true, nullable: true })
-  email: string;
+  email?: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.BUYER })
   role: UserRole;
+
+  @Column({ nullable: true })
+  walletAddress?: string;
 
   @OneToMany(() => Order, (order) => order.buyer)
   orders: Order[];
@@ -47,19 +50,15 @@ export class User {
   @OneToMany(() => Store, (store) => store.owner)
   stores: Store[];
 
-  @OneToMany(() => Payment, (payment) => payment)
+  @OneToMany(() => Payment, (payment) => payment.paymentId)
   payments: Payment[];
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ nullable: true })
-  password: string;
+  @UpdateDateColumn()
+  updatedAt: Date;
 
-  @BeforeInsert()
-  async hashPassword() {
-    if (this.password) {
-      this.password = await bcrypt.hash(this.password, 10);
-    }
-  }
+  @DeleteDateColumn()
+  deletedAt?: Date;
 }
