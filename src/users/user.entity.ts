@@ -47,7 +47,7 @@ export class User {
   @OneToMany(() => Store, (store) => store.owner)
   stores: Store[];
 
-  @OneToMany(() => Payment, (payment) => payment.order)
+  @OneToMany(() => Payment, (payment) => payment)
   payments: Payment[];
 
   @CreateDateColumn()

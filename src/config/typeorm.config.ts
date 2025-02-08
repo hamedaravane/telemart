@@ -1,19 +1,16 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { Payment } from '../payments/payment.entity';
-import { Order } from '../orders/order.entity';
-import { User } from '../users/user.entity';
-import { Product } from '../products/product.entity';
-import { Review } from '../reviews/review.entity';
-import { Store } from '../stores/store.entity';
+import { ConfigService } from '@nestjs/config';
 
-export const typeOrmConfig: TypeOrmModuleOptions = {
+export const typeOrmConfig = (
+  configService: ConfigService,
+): TypeOrmModuleOptions => ({
   type: 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT) || 5432,
-  username: process.env.DB_USERNAME || 'postgres',
-  password: process.env.DB_PASSWORD || 'postgres',
-  database: process.env.DB_NAME || 'ecommerce_db',
-  entities: [Order, Payment, Product, Review, Store, User],
+  host: configService.get<string>('DB_HOST', 'localhost'),
+  port: +configService.get<number>('DB_PORT', 5432),
+  username: configService.get<string>('DB_USERNAME', 'postgres'),
+  password: configService.get<string>('DB_PASSWORD', 'password'),
+  database: configService.get<string>('DB_NAME', 'telemart'),
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: true,
   logging: true,
-};
+});

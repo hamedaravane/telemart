@@ -86,4 +86,17 @@ export class UsersService {
     Object.assign(user, updateUserDto);
     return this.usersRepository.save(user);
   }
+
+  async findOrCreate(authData: Record<string, any>): Promise<User> {
+    const user = await this.usersRepository.findOne({
+      where: { telegramId: authData.id as string },
+    });
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with Telegram ID ${authData.id} not found`,
+      );
+    }
+    return user;
+  }
 }
