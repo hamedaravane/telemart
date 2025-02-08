@@ -20,9 +20,6 @@ export class PaymentsService {
     private paymentsRepository: Repository<Payment>,
   ) {}
 
-  /**
-   * Create a new payment record. Generates a unique paymentId and sets the initial status to PENDING.
-   */
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
     const payment = this.paymentsRepository.create({
       ...createPaymentDto,
@@ -33,16 +30,10 @@ export class PaymentsService {
     return this.paymentsRepository.save(payment);
   }
 
-  /**
-   * Retrieve all payments.
-   */
   async findAll(): Promise<Payment[]> {
     return this.paymentsRepository.find();
   }
 
-  /**
-   * Retrieve a single payment by its primary ID.
-   */
   async findOne(id: string): Promise<Payment> {
     const payment = await this.paymentsRepository.findOne({ where: { id } });
     if (!payment) {
@@ -51,9 +42,6 @@ export class PaymentsService {
     return payment;
   }
 
-  /**
-   * Update an existing payment record. Enforces valid state transitions.
-   */
   async update(
     id: string,
     updatePaymentDto: UpdatePaymentDto,
@@ -75,9 +63,6 @@ export class PaymentsService {
     return this.paymentsRepository.save(payment);
   }
 
-  /**
-   * Remove a payment record.
-   */
   async remove(id: string): Promise<void> {
     const result = await this.paymentsRepository.delete(id);
     if (result.affected === 0) {
@@ -85,13 +70,6 @@ export class PaymentsService {
     }
   }
 
-  /**
-   * Validate whether the state transition from current to next status is allowed.
-   * For example:
-   * - PENDING can transition to PROCESSING or FAILED.
-   * - PROCESSING can transition to COMPLETED or FAILED.
-   * - FAILED can transition to REFUND.
-   */
   private isValidTransition(
     current: PaymentStatus,
     next: PaymentStatus,

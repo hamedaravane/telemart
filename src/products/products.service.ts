@@ -58,7 +58,6 @@ export class ProductsService {
     updateProductDto: UpdateProductDto,
   ): Promise<Product> {
     const product = await this.getProductById(id);
-
     Object.assign(product, updateProductDto);
     return this.productsRepository.save(product);
   }

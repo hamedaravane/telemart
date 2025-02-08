@@ -72,7 +72,6 @@ export class StoresService {
     updateStoreDto: UpdateStoreDto,
   ): Promise<Store> {
     const store = await this.findById(id);
-
     Object.assign(store, updateStoreDto);
     return this.storesRepository.save(store);
   }

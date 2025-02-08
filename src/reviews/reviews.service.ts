@@ -21,14 +21,12 @@ export class ReviewsService {
 
   async createReview(createReviewDto: CreateReviewDto): Promise<Review> {
     const { rating, comment, images, videos } = createReviewDto;
-
     const review = this.reviewsRepository.create({
       rating,
       comment,
       images,
       videos,
     });
-
     return this.reviewsRepository.save(review);
   }
 
@@ -37,11 +35,9 @@ export class ReviewsService {
       where: { id },
       relations: ['replies', 'reports'],
     });
-
     if (!review) {
       throw new NotFoundException(`Review with ID ${id} not found`);
     }
-
     return review;
   }
 
@@ -54,7 +50,6 @@ export class ReviewsService {
       review,
       replyText: createReviewReplyDto.replyText,
     });
-
     await this.repliesRepository.save(reply);
     return this.getReviewById(reviewId);
   }
@@ -69,7 +64,6 @@ export class ReviewsService {
       reason: createReviewReportDto.reason,
       comment: createReviewReportDto.comment,
     });
-
     await this.reportsRepository.save(report);
     return this.getReviewById(reviewId);
   }
