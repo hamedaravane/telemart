@@ -11,6 +11,7 @@ import { User } from '../users/user.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderShipment } from './order-shipment.entity';
 import { Payment } from '../payments/payment.entity';
+import { Store } from '../stores/store.entity';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -30,6 +31,12 @@ export class Order {
 
   @ManyToOne(() => User, (user) => user.orders, { onDelete: 'CASCADE' })
   buyer: User;
+
+  @ManyToOne(() => Store, (store) => store.orders, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  store: Store;
 
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;

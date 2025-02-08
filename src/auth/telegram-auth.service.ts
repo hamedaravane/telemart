@@ -3,7 +3,8 @@ import * as crypto from 'crypto';
 
 @Injectable()
 export class TelegramAuthService {
-  /* TODO: Cache the computed secret key if the bot token never changes (minor performance gain). */
+  private secretKey: Buffer;
+
   validateTelegramData(authData: Record<string, any>): boolean {
     const { hash, ...data } = authData;
 
@@ -12,14 +13,17 @@ export class TelegramAuthService {
       throw new Error('TELEGRAM_BOT_TOKEN environment variable is not defined');
     }
 
+    if (!this.secretKey) {
+      this.secretKey = crypto.createHash('sha256').update(botToken).digest();
+    }
+
     const dataCheckString = Object.keys(data)
       .sort()
       .map((key) => `${key}=${data[key]}`)
       .join('\n');
 
-    const secretKey = crypto.createHash('sha256').update(botToken).digest();
     const hmac = crypto
-      .createHmac('sha256', secretKey)
+      .createHmac('sha256', this.secretKey)
       .update(dataCheckString)
       .digest('hex');
 

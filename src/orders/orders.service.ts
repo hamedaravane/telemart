@@ -9,6 +9,7 @@ import { Order, OrderStatus } from './order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderItem } from './order-item.entity';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class OrdersService {
@@ -17,6 +18,7 @@ export class OrdersService {
     private ordersRepository: Repository<Order>,
     @InjectRepository(OrderItem)
     private orderItemsRepository: Repository<OrderItem>,
+    private productsService: ProductsService,
   ) {}
 
   async createOrder(createOrderDto: CreateOrderDto): Promise<Order> {
@@ -27,21 +29,29 @@ export class OrdersService {
     }
 
     let totalAmount = 0;
+    let orderStore = null;
     const orderItems: OrderItem[] = [];
 
     for (const item of items) {
+      const product = await this.productsService.getProductById(item.productId);
+      if (!orderStore) {
+        orderStore = product.store;
+      } else if (orderStore.id !== product.store.id) {
+        throw new BadRequestException('All items must be from the same store.');
+      }
+      const totalPrice = product.price * item.quantity;
       const orderItem = this.orderItemsRepository.create({
         product: { id: item.productId },
         quantity: item.quantity,
-        totalPrice: 0,
+        totalPrice,
       });
-
-      totalAmount += orderItem.totalPrice;
+      totalAmount += totalPrice;
       orderItems.push(orderItem);
     }
 
     const order = this.ordersRepository.create({
       buyer: { id: buyerId },
+      store: orderStore,
       status: status || OrderStatus.PENDING,
       items: orderItems,
       totalAmount,
@@ -54,7 +64,7 @@ export class OrdersService {
   async getOrderById(id: number): Promise<Order> {
     const order = await this.ordersRepository.findOne({
       where: { id },
-      relations: ['buyer', 'items', 'shipments'],
+      relations: ['buyer', 'items', 'shipments', 'store'],
     });
 
     if (!order) {
@@ -69,14 +79,13 @@ export class OrdersService {
     updateOrderDto: UpdateOrderDto,
   ): Promise<Order> {
     const order = await this.getOrderById(id);
-
     Object.assign(order, updateOrderDto);
     return this.ordersRepository.save(order);
   }
 
   async getAllOrders(): Promise<Order[]> {
     return this.ordersRepository.find({
-      relations: ['buyer', 'items', 'shipments'],
+      relations: ['buyer', 'items', 'shipments', 'store'],
     });
   }
 }

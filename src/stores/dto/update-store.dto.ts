@@ -5,9 +5,10 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
-  IsUrl,
+  IsObject,
   Max,
   Min,
+  IsUrl,
 } from 'class-validator';
 import { StoreCategory } from '../category.entity';
 
@@ -40,10 +41,9 @@ export class UpdateStoreDto {
   @IsString()
   address?: string;
 
-  /* TODO: make sure your DTO (update & create) match that type (currently, they expect a URL string). */
   @IsOptional()
-  @IsUrl({}, { message: 'Invalid social media link' })
-  socialMediaLinks?: string;
+  @IsObject({ message: 'Social media links must be an object' })
+  socialMediaLinks?: { [platform: string]: string };
 
   @IsOptional()
   @IsNumber()

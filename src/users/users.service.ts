@@ -87,16 +87,18 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  /* TODO: the naming “findOrCreate” could be misleading */
   async findOrCreate(authData: Record<string, any>): Promise<User> {
-    const user = await this.usersRepository.findOne({
-      where: { telegramId: authData.id as string },
-    });
-
+    const telegramId = authData.id as string;
+    let user = await this.usersRepository.findOne({ where: { telegramId } });
     if (!user) {
-      throw new NotFoundException(
-        `User with Telegram ID ${authData.id} not found`,
-      );
+      user = this.usersRepository.create({
+        telegramId,
+        name:
+          authData.first_name +
+          (authData.last_name ? ' ' + authData.last_name : ''),
+        role: UserRole.BUYER,
+      });
+      user = await this.usersRepository.save(user);
     }
     return user;
   }

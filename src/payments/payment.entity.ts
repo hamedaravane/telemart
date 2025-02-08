@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
+import { User } from '../users/user.entity';
 
 export enum PaymentStatus {
   PENDING = 'pending',
@@ -30,6 +31,12 @@ export class Payment {
     onDelete: 'SET NULL',
   })
   order: Order;
+
+  @ManyToOne(() => User, (user) => user.payments, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  user: User;
 
   @Column({ type: 'bigint' })
   amount: string;
