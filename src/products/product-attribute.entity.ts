@@ -1,7 +1,14 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { Product } from './product.entity';
 
 @Entity()
+@Unique(['product', 'attributeName'])
 export class ProductAttribute {
   @PrimaryGeneratedColumn()
   id: number;
@@ -11,9 +18,9 @@ export class ProductAttribute {
   })
   product: Product;
 
-  @Column()
+  @Column({ length: 50 })
   attributeName: string;
 
-  @Column()
+  @Column({ length: 255 })
   attributeValue: string;
 }

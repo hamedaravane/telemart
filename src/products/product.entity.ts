@@ -5,6 +5,7 @@ import {
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Store } from '../stores/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
@@ -22,13 +23,13 @@ export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ length: 150 })
   name: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, type: 'text' })
   description?: string;
 
   @Column()
@@ -67,4 +68,7 @@ export class Product {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

@@ -11,10 +11,10 @@ export class ProductVariant {
   })
   product: Product;
 
-  @Column()
+  @Column({ length: 50 })
   variantName: string;
 
-  @Column()
+  @Column({ length: 50 })
   variantValue: string;
 
   @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
