@@ -9,6 +9,7 @@ import {
 import { User } from '../users/user.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderShipment } from './order-shipment.entity';
+import { Payment } from '../payments/payment.entity';
 
 export enum OrderStatus {
   PENDING = 'pending',
@@ -39,6 +40,9 @@ export class Order {
     cascade: true,
   })
   shipments: OrderShipment[];
+
+  @OneToMany(() => Payment, (payment) => payment.order)
+  payments: Payment[];
 
   @Column('decimal', { precision: 10, scale: 2 })
   totalAmount: number;

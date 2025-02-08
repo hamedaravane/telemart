@@ -2,19 +2,22 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Order } from '../orders/order.entity';
 
 export enum PaymentStatus {
   PENDING = 'pending',
-  PROCESSING = 'PROCESSING',
-  COMPLETED = 'COMPLETED',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
   FAILED = 'failed',
   REFUNDED = 'refunded',
 }
 
-@Entity()
+@Entity({ name: 'payments' })
 export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -22,16 +25,24 @@ export class Payment {
   @Column({ unique: true })
   paymentId: string;
 
-  @Column({ nullable: true })
-  orderId: string;
+  @ManyToOne(() => Order, (order) => order.payments, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  order: Order;
 
   @Column({ type: 'bigint' })
   amount: string;
 
-  @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
+  @Column({
+    type: 'enum',
+    enum: PaymentStatus,
+    default: PaymentStatus.PENDING,
+  })
   status: PaymentStatus;
 
   @Column({ nullable: true })
+  @Index()
   transactionHash: string;
 
   @Column({ nullable: true })
