@@ -1,10 +1,12 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
   IsOptional,
+  IsPhoneNumber,
   IsString,
-  Matches,
+  Length,
 } from 'class-validator';
 import { UserRole } from '../user.entity';
 
@@ -15,18 +17,42 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  name: string;
+  firstName: string;
+
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
+  @IsString()
+  @IsOptional()
+  telegramUsername?: string;
+
+  @IsString()
+  @IsOptional()
+  telegramLanguageCode?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isTelegramPremium?: boolean;
+
+  @IsString()
+  @IsOptional()
+  telegramPhotoUrl?: string;
 
   @IsOptional()
-  @Matches(/^\+[1-9]\d{1,14}$/, {
-    message: 'Phone number must be in E.164 format',
-  })
+  @IsPhoneNumber(undefined, { message: 'Invalid phone number format' })
+  @Length(10, 20)
   phoneNumber?: string;
 
   @IsOptional()
   @IsEmail({}, { message: 'Invalid email format' })
   email?: string;
 
-  @IsEnum(UserRole, { message: 'Role must be buyer, seller, or both' })
-  role: UserRole;
+  @IsEnum(UserRole)
+  @IsOptional()
+  role?: UserRole;
+
+  @IsString()
+  @IsOptional()
+  walletAddress?: string;
 }

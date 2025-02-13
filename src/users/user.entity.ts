@@ -27,7 +27,22 @@ export class User {
   telegramId: string;
 
   @Column()
-  name: string;
+  firstName: string;
+
+  @Column({ nullable: true })
+  lastName?: string;
+
+  @Column({ nullable: true })
+  telegramUsername?: string;
+
+  @Column({ nullable: true })
+  telegramLanguageCode?: string;
+
+  @Column({ nullable: true })
+  isTelegramPremium?: boolean;
+
+  @Column({ nullable: true })
+  telegramPhotoUrl?: string;
 
   @Column({ unique: true, nullable: true, length: 20 })
   phoneNumber?: string;
