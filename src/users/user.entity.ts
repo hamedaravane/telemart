@@ -37,16 +37,16 @@ export class User {
   lastName?: string;
 
   @Column({ nullable: true })
-  telegramUsername?: string;
+  username?: string;
 
   @Column({ nullable: true })
-  telegramLanguageCode?: string;
+  languageCode?: string;
 
   @Column({ nullable: true })
-  isTelegramPremium?: boolean;
+  hasTelegramPremium?: boolean;
 
   @Column({ nullable: true })
-  telegramPhotoUrl?: string;
+  photoUrl?: string;
 
   @Column({ unique: true, nullable: true, length: 20 })
   phoneNumber?: string;

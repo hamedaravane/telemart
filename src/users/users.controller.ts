@@ -10,30 +10,24 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { TelegramUserService } from '../telegram/telegram-user.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly telegramUserService: TelegramUserService,
+  ) {}
 
-  @Post('/telegram-auth')
+  @Post('/telegram-init-data')
   @UsePipes(new ValidationPipe())
-  async authenticateUser(@Body() authData: CreateUserDto): Promise<User> {
-    return this.usersService.findOrCreate(authData);
-  }
-
-  @Post()
-  @UsePipes(new ValidationPipe())
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<User> {
-    return this.usersService.createUser(createUserDto);
-  }
-
-  @Get(':telegramId')
-  async getUserByTelegramId(
-    @Param('telegramId') telegramId: string,
-  ): Promise<User> {
-    return this.usersService.findByTelegramId(telegramId);
+  async authenticateUser(@Body() initData: string): Promise<User> {
+    const telegramUser = this.telegramUserService.validateAndGetUser(
+      initData,
+      '',
+    );
+    return this.usersService.findOrCreate(telegramUser);
   }
 
   @Patch('upgrade/:telegramId')
