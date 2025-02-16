@@ -12,18 +12,14 @@ import { UsersService } from './users.service';
 import { User } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { TelegramAuthService } from '../auth/telegram-auth.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly telegramAuthService: TelegramAuthService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('/telegram-auth')
-  async authenticateUser(@Body() authData: Record<string, any>): Promise<User> {
-    this.telegramAuthService.validateTelegramData(authData);
+  @UsePipes(new ValidationPipe())
+  async authenticateUser(@Body() authData: CreateUserDto): Promise<User> {
     return this.usersService.findOrCreate(authData);
   }
 

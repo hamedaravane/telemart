@@ -8,6 +8,9 @@ import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Country } from '../locations/country.entity';
+import { State } from '../locations/state.entity';
+import { City } from '../locations/city.entity';
 
 @Injectable()
 export class UsersService {
@@ -19,10 +22,19 @@ export class UsersService {
   async createUser(createUserDto: CreateUserDto): Promise<User> {
     const {
       telegramId,
-      name,
+      firstName,
+      lastName,
       role = UserRole.BUYER,
       phoneNumber,
       email,
+      telegramUsername,
+      telegramLanguageCode,
+      isTelegramPremium,
+      telegramPhotoUrl,
+      walletAddress,
+      countryId,
+      stateId,
+      cityId,
     } = createUserDto;
 
     const existingUser = await this.usersRepository.findOne({
@@ -37,11 +49,27 @@ export class UsersService {
 
     const user = this.usersRepository.create({
       telegramId,
-      name,
-      role,
+      firstName,
+      lastName,
+      telegramUsername,
+      telegramLanguageCode,
+      isTelegramPremium,
+      telegramPhotoUrl,
       phoneNumber,
       email,
+      role,
+      walletAddress,
     });
+
+    if (countryId) {
+      user.country = { id: countryId } as Country;
+    }
+    if (stateId) {
+      user.state = { id: stateId } as State;
+    }
+    if (cityId) {
+      user.city = { id: cityId } as City;
+    }
 
     return this.usersRepository.save(user);
   }
@@ -49,7 +77,7 @@ export class UsersService {
   async findByTelegramId(telegramId: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { telegramId },
-      relations: ['stores', 'orders', 'reviews'],
+      relations: ['stores', 'orders', 'reviews', 'country', 'state', 'city'],
     });
 
     if (!user) {
@@ -73,7 +101,9 @@ export class UsersService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.usersRepository.find({ relations: ['stores', 'orders'] });
+    return this.usersRepository.find({
+      relations: ['stores', 'orders', 'country', 'state', 'city'],
+    });
   }
 
   async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
@@ -81,20 +111,38 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
     Object.assign(user, updateUserDto);
+
+    if (updateUserDto.countryId !== undefined) {
+      user.country = { id: updateUserDto.countryId } as Country;
+    }
+    if (updateUserDto.stateId !== undefined) {
+      user.state = { id: updateUserDto.stateId } as State;
+    }
+    if (updateUserDto.cityId !== undefined) {
+      user.city = { id: updateUserDto.cityId } as City;
+    }
+
     return this.usersRepository.save(user);
   }
 
-  async findOrCreate(authData: Record<string, any>): Promise<User> {
-    const telegramId = authData.id as string;
+  async findOrCreate(authData: CreateUserDto): Promise<User> {
+    const telegramId = authData.telegramId;
     let user = await this.usersRepository.findOne({ where: { telegramId } });
     if (!user) {
       user = this.usersRepository.create({
         telegramId,
-        name:
-          authData.first_name +
-          (authData.last_name ? ' ' + authData.last_name : ''),
-        role: UserRole.BUYER,
+        firstName: authData.firstName,
+        lastName: authData.lastName,
+        telegramUsername: authData.telegramUsername,
+        telegramLanguageCode: authData.telegramLanguageCode,
+        isTelegramPremium: authData.isTelegramPremium,
+        telegramPhotoUrl: authData.telegramPhotoUrl,
+        phoneNumber: authData.phoneNumber,
+        email: authData.email,
+        role: authData.role ?? UserRole.BUYER,
+        walletAddress: authData.walletAddress,
       });
       user = await this.usersRepository.save(user);
     }

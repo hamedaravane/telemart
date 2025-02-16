@@ -29,6 +29,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "@telegram-apps/init-data-node": "^2.0.2",
     "@tonconnect/sdk": "^3.0.6",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",

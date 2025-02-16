@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsInt,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -18,24 +19,24 @@ export class UpdateUserDto {
   @IsString()
   lastName?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramUsername?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramLanguageCode?: string;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   isTelegramPremium?: boolean;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramPhotoUrl?: string;
 
-  @IsPhoneNumber(undefined, { message: 'Invalid phone number format' })
   @IsOptional()
+  @IsPhoneNumber(undefined, { message: 'Invalid phone number format' })
   @Length(10, 20)
   phoneNumber?: string;
 
@@ -47,7 +48,19 @@ export class UpdateUserDto {
   @IsEnum(UserRole, { message: 'Role must be buyer, seller, or both' })
   role?: UserRole;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   walletAddress?: string;
+
+  @IsOptional()
+  @IsInt()
+  countryId?: number;
+
+  @IsOptional()
+  @IsInt()
+  stateId?: number;
+
+  @IsOptional()
+  @IsInt()
+  cityId?: number;
 }

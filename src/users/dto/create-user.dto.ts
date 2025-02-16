@@ -2,6 +2,7 @@ import {
   IsBoolean,
   IsEmail,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsOptional,
   IsPhoneNumber,
@@ -23,20 +24,20 @@ export class CreateUserDto {
   @IsOptional()
   lastName?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramUsername?: string;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramLanguageCode?: string;
 
-  @IsBoolean()
   @IsOptional()
+  @IsBoolean()
   isTelegramPremium?: boolean;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   telegramPhotoUrl?: string;
 
   @IsOptional()
@@ -48,11 +49,23 @@ export class CreateUserDto {
   @IsEmail({}, { message: 'Invalid email format' })
   email?: string;
 
-  @IsEnum(UserRole)
   @IsOptional()
+  @IsEnum(UserRole)
   role?: UserRole;
 
-  @IsString()
   @IsOptional()
+  @IsString()
   walletAddress?: string;
+
+  @IsOptional()
+  @IsInt()
+  countryId?: number;
+
+  @IsOptional()
+  @IsInt()
+  stateId?: number;
+
+  @IsOptional()
+  @IsInt()
+  cityId?: number;
 }

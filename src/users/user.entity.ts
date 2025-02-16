@@ -3,6 +3,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -11,6 +12,9 @@ import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
 import { Store } from '../stores/store.entity';
 import { Payment } from '../payments/payment.entity';
+import { Country } from '../locations/country.entity';
+import { State } from '../locations/state.entity';
+import { City } from '../locations/city.entity';
 
 export enum UserRole {
   BUYER = 'buyer',
@@ -55,6 +59,15 @@ export class User {
 
   @Column({ nullable: true })
   walletAddress?: string;
+
+  @ManyToOne(() => Country, { nullable: true })
+  country?: Country;
+
+  @ManyToOne(() => State, { nullable: true })
+  state?: State;
+
+  @ManyToOne(() => City, { nullable: true })
+  city?: City;
 
   @OneToMany(() => Order, (order) => order.buyer)
   orders: Order[];
