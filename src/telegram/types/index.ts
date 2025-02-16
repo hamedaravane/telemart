@@ -1,14 +1,3 @@
-/**
- * Telegram Mini Apps TypeScript Models
- *
- * This file contains interfaces that model all the Telegram Web App objects,
- * parameters, and methods as described in the documentation.
- */
-
-/* ================================
-   Basic Parameter Interfaces & Types
-   ================================ */
-
 export interface ThemeParams {
   /** Background color in the `#RRGGBB` format */
   bg_color?: string;
@@ -109,10 +98,6 @@ export interface ContentSafeAreaInset {
   right: number;
 }
 
-/* ================================
-   Button Interfaces
-   ================================ */
-
 /** Back button for the Mini App header */
 export interface BackButton {
   isVisible: boolean;
@@ -187,10 +172,6 @@ export interface SettingsButton {
   hide(): SettingsButton;
 }
 
-/* ================================
-   Haptic Feedback
-   ================================ */
-
 export type HapticStyle = 'light' | 'medium' | 'heavy' | 'rigid' | 'soft';
 export type HapticNotificationType = 'error' | 'success' | 'warning';
 
@@ -201,10 +182,6 @@ export interface HapticFeedback {
 
   selectionChanged(): HapticFeedback;
 }
-
-/* ================================
-   Cloud Storage
-   ================================ */
 
 export interface CloudStorage {
   setItem(
@@ -232,10 +209,6 @@ export interface CloudStorage {
 
   getKeys(callback: (error: any, keys?: string[]) => void): void;
 }
-
-/* ================================
-   Biometric Manager & Params
-   ================================ */
 
 export type BiometricType = 'finger' | 'face' | 'unknown';
 
@@ -277,10 +250,6 @@ export interface BiometricAuthenticateParams {
   /** Optional reason text (0-128 characters) */
   reason?: string;
 }
-
-/* ================================
-   Motion & Orientation
-   ================================ */
 
 export interface AccelerometerStartParams {
   /**
@@ -343,10 +312,6 @@ export interface Gyroscope {
   stop(callback?: (stopped: boolean) => void): Gyroscope;
 }
 
-/* ================================
-   Location
-   ================================ */
-
 export interface LocationData {
   latitude: number;
   longitude: number;
@@ -373,10 +338,6 @@ export interface LocationManager {
 
   openSettings(): LocationManager;
 }
-
-/* ================================
-   WebApp Initialization Data
-   ================================ */
 
 export interface WebAppUser {
   id: number;
@@ -412,10 +373,6 @@ export interface WebAppInitData {
   hash: string;
   signature?: string;
 }
-
-/* ================================
-   Core WebApp Interface
-   ================================ */
 
 export interface WebApp {
   initData: string;
