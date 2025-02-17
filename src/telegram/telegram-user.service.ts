@@ -1,14 +1,26 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import * as crypto from 'crypto';
 import { WebAppInitData, WebAppUser } from './types';
+import { ConfigService } from '@nestjs/config';
 
 const DEFAULT24HOURS = 86400;
 
 @Injectable()
 export class TelegramUserService {
+  private readonly TELEGRAM_BOT_TOKEN: string;
+
+  constructor(private readonly configService: ConfigService) {
+    const token = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    if (!token) throw new InternalServerErrorException();
+    this.TELEGRAM_BOT_TOKEN = token;
+  }
+
   validateTelegramInitData(
     initData: string,
-    botToken: string,
     maxAgeSeconds: number = DEFAULT24HOURS,
   ): WebAppInitData {
     const params = new URLSearchParams(initData);
@@ -30,7 +42,7 @@ export class TelegramUserService {
 
     const secretKey = crypto
       .createHmac('sha256', 'WebAppData')
-      .update(botToken)
+      .update(this.TELEGRAM_BOT_TOKEN)
       .digest();
 
     const computedHash = crypto
@@ -67,11 +79,9 @@ export class TelegramUserService {
     };
   }
 
-  validateAndGetUser(initData: string, botToken: string): WebAppUser {
-    const webAppInitData: WebAppInitData = this.validateTelegramInitData(
-      initData,
-      botToken,
-    );
+  validateAndGetUser(initData: string): WebAppUser {
+    const webAppInitData: WebAppInitData =
+      this.validateTelegramInitData(initData);
 
     if (!webAppInitData.user) {
       throw new BadRequestException(

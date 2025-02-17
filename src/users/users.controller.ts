@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  InternalServerErrorException,
   Param,
   Patch,
   Post,
@@ -15,25 +14,18 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
 import { TelegramUserService } from '../telegram/telegram-user.service';
-import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly telegramUserService: TelegramUserService,
-    private readonly configService: ConfigService,
   ) {}
 
   @Post('/telegram-init-data')
   @UsePipes(new ValidationPipe())
   async authenticateUser(@Body() initData: string): Promise<User> {
-    const botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
-    if (!botToken) throw new InternalServerErrorException();
-    const tgUser = this.telegramUserService.validateAndGetUser(
-      initData,
-      botToken,
-    );
+    const tgUser = this.telegramUserService.validateAndGetUser(initData);
     return this.usersService.findOrCreate(tgUser);
   }
 
