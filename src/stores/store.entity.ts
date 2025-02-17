@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
@@ -12,7 +13,10 @@ import {
 import { User } from '../users/user.entity';
 import { Product } from '../products/product.entity';
 import { Order } from '../orders/order.entity';
-import { StoreCategory } from './category.entity';
+import { StoreCategory } from './categories';
+import { Country } from '../locations/country.entity';
+import { State } from '../locations/state.entity';
+import { City } from '../locations/city.entity';
 
 @Entity({ name: 'stores' })
 export class Store {
@@ -54,8 +58,14 @@ export class Store {
   @Column({ nullable: true })
   email?: string;
 
-  @Column({ nullable: true })
-  address?: string;
+  @ManyToOne(() => Country, { nullable: true })
+  country?: Country;
+
+  @ManyToOne(() => State, { nullable: true })
+  state?: State;
+
+  @ManyToOne(() => City, { nullable: true })
+  city?: City;
 
   @Column({ nullable: true, type: 'simple-json' })
   socialMediaLinks?: { [platform: string]: string };
@@ -63,12 +73,15 @@ export class Store {
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 5.0 })
   reputation: number;
 
-  @Column({ nullable: true })
-  workingHours?: string;
+  @Column({ nullable: true, type: 'json' })
+  workingHours?: Record<string, { open: string; close: string }>;
 
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

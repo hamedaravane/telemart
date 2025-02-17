@@ -1,57 +1,138 @@
+import { Type } from 'class-transformer';
 import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
   IsNumber,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
   IsObject,
-  Max,
-  Min,
-  IsUrl,
+  IsOptional,
+  IsString,
+  Matches,
+  ValidateNested,
 } from 'class-validator';
-import { StoreCategory } from '../category.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { StoreCategory } from '../categories';
 
+/**
+ * A DTO representing a working hour for a day.
+ */
+export class WorkingHourDto {
+  @ApiProperty({
+    description: 'Opening time in HH:mm format',
+    example: '08:00',
+  })
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Invalid open time format. Use HH:mm format',
+  })
+  open: string;
+
+  @ApiProperty({
+    description: 'Closing time in HH:mm format',
+    example: '17:00',
+  })
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Invalid close time format. Use HH:mm format',
+  })
+  close: string;
+}
+
+/**
+ * DTO for creating a store.
+ *
+ * The creation is designed as a multistep process:
+ * 1. Basic info: name, description, contactNumber, email, country, state, city, workingHours.
+ *    - **name** and **description** are required.
+ * 2. Category selection.
+ * 3. Uploading a logo/photo.
+ *
+ * All fields except `name` and `description` are optional.
+ */
 export class CreateStoreDto {
+  @ApiProperty({
+    description: 'Name of the store',
+    maxLength: 100,
+    example: 'My Awesome Store',
+  })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @IsOptional()
-  @IsUrl({}, { message: 'Invalid logo URL' })
-  logoUrl?: string;
+  @ApiProperty({
+    description: 'A short description of the store',
+    example: 'We offer the best products in town.',
+  })
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 
+  @ApiPropertyOptional({
+    description: 'Contact number for the store',
+    example: '+1-555-1234567',
+  })
   @IsOptional()
   @IsString()
-  description?: string;
-
-  @IsEnum(StoreCategory, { message: 'Invalid store category' })
-  category: StoreCategory;
-
-  @IsOptional()
-  @IsPhoneNumber(undefined, { message: 'Invalid phone number' })
   contactNumber?: string;
 
+  @ApiPropertyOptional({
+    description: 'Contact email for the store',
+    example: 'contact@mystore.com',
+  })
   @IsOptional()
-  @IsEmail({}, { message: 'Invalid email address' })
+  @IsEmail()
   email?: string;
 
-  @IsOptional()
-  @IsString()
-  address?: string;
-
-  @IsOptional()
-  @IsObject({ message: 'Social media links must be an object' })
-  socialMediaLinks?: { [platform: string]: string };
-
+  @ApiPropertyOptional({
+    description: 'Country identifier (ID)',
+    example: 1,
+  })
   @IsOptional()
   @IsNumber()
-  @Min(0)
-  @Max(5)
-  reputation?: number;
+  country?: number;
 
+  @ApiPropertyOptional({
+    description: 'State identifier (ID)',
+    example: 5,
+  })
+  @IsOptional()
+  @IsNumber()
+  state?: number;
+
+  @ApiPropertyOptional({
+    description: 'City identifier (ID)',
+    example: 10,
+  })
+  @IsOptional()
+  @IsNumber()
+  city?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Working hours for the store. Provide an object where keys represent the day (e.g., "monday") and values are working hours.',
+    example: {
+      monday: { open: '08:00', close: '17:00' },
+      tuesday: { open: '08:00', close: '17:00' },
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  @ValidateNested({ each: true })
+  @Type(() => WorkingHourDto)
+  workingHours?: Record<string, WorkingHourDto>;
+
+  @ApiPropertyOptional({
+    description: 'Category of the store',
+    enum: StoreCategory,
+    example: StoreCategory.ELECTRONICS,
+  })
+  @IsOptional()
+  @IsEnum(StoreCategory, { message: 'Invalid store category' })
+  category?: StoreCategory;
+
+  @ApiPropertyOptional({
+    description: 'URL for the store logo or photo',
+    example: 'https://example.com/logo.png',
+  })
   @IsOptional()
   @IsString()
-  workingHours?: string;
+  logoUrl?: string;
 }
