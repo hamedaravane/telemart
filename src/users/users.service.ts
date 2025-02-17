@@ -6,7 +6,9 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateLanguageDto } from './dto/update-language.dto';
+import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
 import { Country } from '../locations/country.entity';
 import { State } from '../locations/state.entity';
 import { City } from '../locations/city.entity';
@@ -17,6 +19,8 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(Country)
+    private countryRepository: Repository<Country>,
   ) {}
 
   async findByTelegramId(telegramId: string): Promise<User> {
@@ -24,23 +28,17 @@ export class UsersService {
       where: { telegramId },
       relations: ['stores', 'orders', 'reviews', 'country', 'state', 'city'],
     });
-
-    if (!user) {
+    if (!user)
       throw new NotFoundException(
         `User with Telegram ID ${telegramId} not found`,
       );
-    }
-
     return user;
   }
 
   async upgradeToSeller(telegramId: string): Promise<User> {
     const user = await this.findByTelegramId(telegramId);
-
-    if (user.role === UserRole.SELLER || user.role === UserRole.BOTH) {
-      throw new BadRequestException(`User is already a seller`);
-    }
-
+    if (user.role === UserRole.SELLER || user.role === UserRole.BOTH)
+      throw new BadRequestException('User is already a seller');
     user.role = UserRole.BOTH;
     return this.usersRepository.save(user);
   }
@@ -51,24 +49,38 @@ export class UsersService {
     });
   }
 
-  async updateUser(id: number, updateUserDto: UpdateUserDto): Promise<User> {
+  async updateProfile(id: number, dto: UpdateProfileDto): Promise<User> {
     const user = await this.usersRepository.findOne({ where: { id } });
-    if (!user) {
-      throw new NotFoundException(`User with ID ${id} not found`);
-    }
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    if (dto.firstName !== undefined) user.firstName = dto.firstName;
+    if (dto.lastName !== undefined) user.lastName = dto.lastName;
+    return this.usersRepository.save(user);
+  }
 
-    Object.assign(user, updateUserDto);
+  async updateLanguage(id: number, dto: UpdateLanguageDto): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    user.languageCode = dto.languageCode || 'EN';
+    return this.usersRepository.save(user);
+  }
 
-    if (updateUserDto.countryId !== undefined) {
-      user.country = { id: updateUserDto.countryId } as Country;
-    }
-    if (updateUserDto.stateId !== undefined) {
-      user.state = { id: updateUserDto.stateId } as State;
-    }
-    if (updateUserDto.cityId !== undefined) {
-      user.city = { id: updateUserDto.cityId } as City;
-    }
-
+  async updateContactLocation(
+    id: number,
+    dto: UpdateContactLocationDto,
+  ): Promise<User> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException(`User with ID ${id} not found`);
+    const country = await this.countryRepository.findOne({
+      where: { id: dto.countryId },
+    });
+    if (!country) throw new BadRequestException('Invalid country');
+    if (!dto.phoneNumber.startsWith(country.phoneCode))
+      throw new BadRequestException('Phone number does not match country code');
+    user.phoneNumber = dto.phoneNumber;
+    user.email = dto.email;
+    user.country = { id: dto.countryId } as Country;
+    user.state = { id: dto.stateId } as State;
+    user.city = { id: dto.cityId } as City;
     return this.usersRepository.save(user);
   }
 
@@ -77,17 +89,14 @@ export class UsersService {
     let user = await this.usersRepository.findOne({ where: { telegramId } });
     if (!user) {
       user = this.usersRepository.create({
-        telegramId: telegramId,
+        telegramId,
         firstName: tgUser.first_name,
         lastName: tgUser.last_name,
         username: tgUser.username,
-        languageCode: tgUser.language_code,
+        languageCode: tgUser.language_code || 'EN',
         hasTelegramPremium: tgUser.is_premium,
         photoUrl: tgUser.photo_url,
-        phoneNumber: undefined,
-        email: undefined,
         role: UserRole.BUYER,
-        walletAddress: undefined,
       });
       user = await this.usersRepository.save(user);
     }

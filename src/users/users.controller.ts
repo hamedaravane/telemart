@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   Param,
   Patch,
   Post,
@@ -10,24 +11,30 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateLanguageDto } from './dto/update-language.dto';
+import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
 import { TelegramUserService } from '../telegram/telegram-user.service';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly telegramUserService: TelegramUserService,
+    private readonly configService: ConfigService,
   ) {}
 
   @Post('/telegram-init-data')
   @UsePipes(new ValidationPipe())
   async authenticateUser(@Body() initData: string): Promise<User> {
-    const telegramUser = this.telegramUserService.validateAndGetUser(
+    const botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    if (!botToken) throw new InternalServerErrorException();
+    const tgUser = this.telegramUserService.validateAndGetUser(
       initData,
-      '',
+      botToken,
     );
-    return this.usersService.findOrCreate(telegramUser);
+    return this.usersService.findOrCreate(tgUser);
   }
 
   @Patch('upgrade/:telegramId')
@@ -37,13 +44,31 @@ export class UsersController {
     return this.usersService.upgradeToSeller(telegramId);
   }
 
-  @Patch(':id')
+  @Patch('profile/:id')
   @UsePipes(new ValidationPipe())
-  async updateUser(
+  async updateProfile(
     @Param('id') id: number,
-    @Body() updateUserDto: UpdateUserDto,
+    @Body() dto: UpdateProfileDto,
   ): Promise<User> {
-    return this.usersService.updateUser(id, updateUserDto);
+    return this.usersService.updateProfile(id, dto);
+  }
+
+  @Patch('language/:id')
+  @UsePipes(new ValidationPipe())
+  async updateLanguage(
+    @Param('id') id: number,
+    @Body() dto: UpdateLanguageDto,
+  ): Promise<User> {
+    return this.usersService.updateLanguage(id, dto);
+  }
+
+  @Patch('contact-location/:id')
+  @UsePipes(new ValidationPipe())
+  async updateContactLocation(
+    @Param('id') id: number,
+    @Body() dto: UpdateContactLocationDto,
+  ): Promise<User> {
+    return this.usersService.updateContactLocation(id, dto);
   }
 
   @Get()
