@@ -13,12 +13,6 @@ import {
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { StoreCategory } from '../categories';
 
-/**
- * STEP 1: Basic Info
- *
- * - Required: name, description
- * - Optional: contactNumber, email
- */
 export class CreateStoreBasicDto {
   @ApiProperty({
     description: 'Name of the store',
@@ -54,11 +48,6 @@ export class CreateStoreBasicDto {
   email?: string;
 }
 
-/**
- * STEP 2: Location Info
- *
- * All fields are optional. These can be used to relate to your Country, State, and City entities.
- */
 export class CreateStoreLocationDto {
   @ApiPropertyOptional({
     description: 'Country identifier (ID)',
@@ -85,11 +74,6 @@ export class CreateStoreLocationDto {
   city?: number;
 }
 
-/**
- * STEP 3: Category Selection
- *
- * The user must choose a category.
- */
 export class CreateStoreCategoryDto {
   @ApiProperty({
     description: 'Category of the store',
@@ -100,11 +84,6 @@ export class CreateStoreCategoryDto {
   category: StoreCategory;
 }
 
-/**
- * STEP 4: Working Hours
- *
- * The working hours are optional. Use a nested DTO to validate time formats.
- */
 export class WorkingHourDto {
   @ApiProperty({
     description: 'Opening time in HH:mm format',
@@ -141,11 +120,6 @@ export class CreateStoreWorkingHoursDto {
   workingHours?: Record<string, WorkingHourDto>;
 }
 
-/**
- * STEP 5: Logo/Photo
- *
- * Expecting a URL (or you might handle file uploads differently via a dedicated file endpoint).
- */
 export class CreateStoreLogoDto {
   @ApiProperty({
     description: 'URL for the store logo or photo',

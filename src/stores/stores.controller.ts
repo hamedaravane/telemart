@@ -8,6 +8,7 @@ import {
   Patch,
   Post,
   UploadedFile,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { StoresService } from './stores.service';
@@ -24,6 +25,10 @@ import {
   CreateStoreLocationDto,
   CreateStoreWorkingHoursDto,
 } from './dto/create-store.dto';
+import { UpdateStoreDto } from './dto/update-store.dto';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { User } from '../users/user.entity';
+import { StoreOwnerGuard } from './store-owner.guard';
 
 @ApiTags('stores')
 @ApiBearerAuth()
@@ -31,9 +36,6 @@ import {
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
 
-  /**
-   * STEP 1: Create store with basic info.
-   */
   @Post('basic')
   @ApiOperation({ summary: 'Create store basic information' })
   @ApiResponse({
@@ -47,10 +49,8 @@ export class StoresController {
     return await this.storesService.createStoreBasic(user, dto);
   }
 
-  /**
-   * STEP 2: Update location info.
-   */
   @Patch(':id/location')
+  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store location information' })
   @ApiResponse({
     status: 200,
@@ -64,10 +64,8 @@ export class StoresController {
     return await this.storesService.updateStoreLocation(user, id, dto);
   }
 
-  /**
-   * STEP 3: Update store category.
-   */
   @Patch(':id/category')
+  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store category' })
   @ApiResponse({
     status: 200,
@@ -81,10 +79,8 @@ export class StoresController {
     return await this.storesService.updateStoreCategory(user, id, dto);
   }
 
-  /**
-   * STEP 4: Update store working hours.
-   */
   @Patch(':id/working-hours')
+  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store working hours' })
   @ApiResponse({
     status: 200,
@@ -98,15 +94,8 @@ export class StoresController {
     return await this.storesService.updateStoreWorkingHours(user, id, dto);
   }
 
-  /**
-   * STEP 5: Upload store logo/photo.
-   *
-   * This endpoint accepts a file upload using the FileInterceptor.
-   * It uses the ParseFilePipeBuilder to validate that the file:
-   * - Is an image (jpeg, png, or gif)
-   * - Does not exceed the maximum file size (e.g., 2MB)
-   */
   @Post(':id/logo')
+  @UseGuards(StoreOwnerGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({ summary: 'Upload store logo or photo' })
   @ApiResponse({
@@ -114,21 +103,28 @@ export class StoresController {
     description: 'Store logo updated successfully.',
   })
   async uploadStoreLogo(
+    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(
       new ParseFilePipeBuilder()
-        .addFileTypeValidator({
-          fileType: /jpeg|png|gif/i,
-        })
-        .addMaxSizeValidator({
-          maxSize: 2 * 1024 * 1024,
-        })
-        .build({
-          errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
-        }),
+        .addFileTypeValidator({ fileType: /jpeg|png|gif/i })
+        .addMaxSizeValidator({ maxSize: 2 * 1024 * 1024 })
+        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file: Express.Multer.File,
   ) {
     return await this.storesService.uploadStoreLogo(user, id, file);
+  }
+
+  @Patch(':id')
+  @UseGuards(StoreOwnerGuard)
+  @ApiOperation({ summary: 'Update store details' })
+  @ApiResponse({ status: 200, description: 'Store updated successfully.' })
+  async updateStore(
+    @CurrentUser() user: User,
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateStoreDto,
+  ) {
+    return await this.storesService.updateStore(user, id, dto);
   }
 }
