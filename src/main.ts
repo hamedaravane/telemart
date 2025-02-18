@@ -13,16 +13,11 @@ async function bootstrap() {
     .setTitle('telemart API')
     .setDescription('API documentation for telemart project')
     .setVersion('1.0')
-    .setBasePath('https://telemart-nest.liara.run')
-    .addBearerAuth()
     .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Server running on port ${port}`);
-  console.log(`Swagger docs available at: https://telemart-nest.liara.run/api`);
+  await app.listen(process.env.PORT ?? 3000);
 }
 
 bootstrap();
