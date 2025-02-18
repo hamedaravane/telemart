@@ -12,10 +12,6 @@ import {
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { StoreCategory } from '../categories';
 
-/**
- * A DTO representing a working hour for a day.
- * This is the same as in the creation DTO.
- */
 export class WorkingHourDto {
   @ApiPropertyOptional({
     description: 'Opening time in HH:mm format',
@@ -36,11 +32,6 @@ export class WorkingHourDto {
   close: string;
 }
 
-/**
- * DTO for updating a store.
- *
- * All fields are optional to allow partial updates.
- */
 export class UpdateStoreDto {
   @ApiPropertyOptional({
     description: 'Name of the store',
