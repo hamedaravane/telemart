@@ -30,11 +30,11 @@ export class StoresService {
     private configService: ConfigService,
   ) {
     this.bucketName = this.configService.get<string>(
-      'LIARA_BUCKET_ID',
+      'BUCKET_NAME',
       'telemart-files',
     );
     this.s3ApiEndpoint = this.configService.get<string>(
-      'LIARA_S3_API_ENDPOINT',
+      'API_ENDPOINT',
       'storage.c2.liara.space',
     );
     this.s3Client = new S3Client({
