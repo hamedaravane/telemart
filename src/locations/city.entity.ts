@@ -13,7 +13,7 @@ export class City {
   nameLocal: Record<string, string>;
 
   @Column({ nullable: true })
-  postalCode: string | null;
+  postalCode: string;
 
   @Column({ type: 'float', nullable: true })
   latitude: number;

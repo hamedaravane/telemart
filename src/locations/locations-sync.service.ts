@@ -121,7 +121,7 @@ export class LocationsSyncService {
               city = this.cityRepository.create({
                 name: cityData.name,
                 nameLocal: { en: cityData.name },
-                postalCode: cityData.postalCode || null,
+                postalCode: cityData.postalCode,
                 latitude: Number(cityData.lat),
                 longitude: Number(cityData.lng),
                 state,
