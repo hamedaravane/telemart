@@ -9,7 +9,7 @@ export const typeOrmConfig = (
   port: +configService.get<number>('DB_PORT', 5432),
   username: configService.get<string>('DB_USERNAME', 'postgres'),
   password: configService.get<string>('DB_PASSWORD', 'password'),
-  database: configService.get<string>('DB_NAME', 'telemart'),
+  database: configService.get<string>('DB_NAME', 'postgres'),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
   synchronize: true,
   logging: true,
