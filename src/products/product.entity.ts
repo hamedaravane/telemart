@@ -66,6 +66,9 @@ export class Product {
   @Column({ nullable: true })
   stock?: number;
 
+  @Column({ default: false })
+  isApproved: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

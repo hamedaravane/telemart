@@ -1,6 +1,5 @@
 import {
   IsArray,
-  IsEnum,
   IsNumber,
   IsOptional,
   IsString,
@@ -9,7 +8,6 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProductType } from '../product.entity';
 import { CreateProductAttributeDto } from './create-product-attribute.dto';
 import { CreateProductVariantDto } from './create-product-variant.dto';
 
@@ -30,10 +28,6 @@ export class UpdateProductDto {
   @IsOptional()
   @IsUrl({}, { message: 'Invalid image URL' })
   imageUrl?: string;
-
-  @IsOptional()
-  @IsEnum(ProductType)
-  productType?: ProductType;
 
   @IsOptional()
   @IsString()
