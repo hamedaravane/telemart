@@ -2,10 +2,9 @@ import {
   Body,
   Controller,
   Get,
-  Param,
-  Delete,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Put,
 } from '@nestjs/common';
@@ -43,11 +42,5 @@ export class PaymentsController {
       const error = err as Error;
       throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
     }
-  }
-
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.paymentsService.remove(id);
-    return { message: 'Payment deleted successfully' };
   }
 }

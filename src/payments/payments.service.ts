@@ -1,8 +1,9 @@
 import {
-  Injectable,
-  NotFoundException,
   BadRequestException,
+  Inject,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -10,6 +11,7 @@ import { Payment, PaymentStatus } from './payment.entity';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { v4 as uuidv4 } from 'uuid';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class PaymentsService {
@@ -18,6 +20,7 @@ export class PaymentsService {
   constructor(
     @InjectRepository(Payment)
     private paymentsRepository: Repository<Payment>,
+    @Inject('PAYMENT_QUEUE') private paymentQueue: Queue,
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
@@ -26,7 +29,8 @@ export class PaymentsService {
       paymentId: uuidv4(),
       status: PaymentStatus.PENDING,
     });
-    this.logger.debug(`Creating new payment with ID: ${payment.paymentId}`);
+
+    this.logger.log(`Created new payment request: ${payment.paymentId}`);
     return this.paymentsRepository.save(payment);
   }
 
@@ -36,9 +40,8 @@ export class PaymentsService {
 
   async findOne(id: string): Promise<Payment> {
     const payment = await this.paymentsRepository.findOne({ where: { id } });
-    if (!payment) {
+    if (!payment)
       throw new NotFoundException(`Payment with id ${id} not found`);
-    }
     return payment;
   }
 
@@ -57,17 +60,43 @@ export class PaymentsService {
     }
 
     Object.assign(payment, updatePaymentDto);
-    this.logger.debug(
+    this.logger.log(
       `Updating payment ${payment.paymentId} to status ${payment.status}`,
     );
     return this.paymentsRepository.save(payment);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.paymentsRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException(`Payment with id ${id} not found`);
+  async confirmPayment(
+    txHash: string,
+    from: string,
+    to: string,
+    amount: string,
+  ) {
+    const existingPayment = await this.paymentsRepository.findOne({
+      where: { transactionHash: txHash },
+    });
+
+    if (existingPayment) {
+      this.logger.warn(`Duplicate transaction detected: ${txHash}`);
+      return;
     }
+
+    const payment = await this.paymentsRepository.findOne({
+      where: {
+        toWalletAddress: to,
+        amount,
+        status: PaymentStatus.PENDING,
+      },
+    });
+
+    if (!payment)
+      throw new NotFoundException('No matching payment request found');
+
+    payment.status = PaymentStatus.COMPLETED;
+    payment.transactionHash = txHash;
+
+    this.logger.log(`Payment confirmed: ${txHash}`);
+    await this.paymentsRepository.save(payment);
   }
 
   private isValidTransition(
