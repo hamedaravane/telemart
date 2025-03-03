@@ -1,6 +1,8 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +25,7 @@ export class StoresService {
   private s3Client: S3Client;
   private readonly bucketName: string;
   private readonly s3ApiEndpoint: string;
+  private readonly logger = new Logger(StoresService.name);
 
   constructor(
     @InjectRepository(Store)
@@ -48,6 +51,7 @@ export class StoresService {
       ...dto,
       owner: user,
     });
+    this.logger.log(`Creating store "${dto.name}" for user ${user.id}`);
     return await this.storeRepository.save(store);
   }
 
@@ -69,6 +73,7 @@ export class StoresService {
   ): Promise<Store> {
     const store = await this.findStoreById(id);
     Object.assign(store, dto);
+    this.logger.log(`Updating location for store ID ${id}`);
     return await this.storeRepository.save(store);
   }
 
@@ -79,6 +84,7 @@ export class StoresService {
   ): Promise<Store> {
     const store = await this.findStoreById(id);
     store.category = dto.category;
+    this.logger.log(`Updating category for store ID ${id} to ${dto.category}`);
     return await this.storeRepository.save(store);
   }
 
@@ -88,7 +94,11 @@ export class StoresService {
     dto: CreateStoreWorkingHoursDto,
   ): Promise<Store> {
     const store = await this.findStoreById(id);
+    if (dto.workingHours) {
+      this.validateWorkingHours(dto.workingHours);
+    }
     store.workingHours = dto.workingHours;
+    this.logger.log(`Updating working hours for store ID ${id}`);
     return await this.storeRepository.save(store);
   }
 
@@ -98,7 +108,6 @@ export class StoresService {
     file: Express.Multer.File,
   ): Promise<Store> {
     const store = await this.findStoreById(id);
-
     const fileExtension = file.originalname.split('.').pop();
     const fileKey = `stores/${store.id}/${randomUUID()}.${fileExtension}`;
 
@@ -112,11 +121,12 @@ export class StoresService {
       });
       await this.s3Client.send(command);
     } catch (error) {
-      console.error('Error uploading file to S3:', error);
+      this.logger.error('Error uploading file to S3:', error);
       throw new InternalServerErrorException('Failed to upload file to S3');
     }
 
     store.logoUrl = `https://${this.bucketName}.${this.s3ApiEndpoint}/${fileKey}`;
+    this.logger.log(`Uploaded new logo for store ID ${id}`);
     return await this.storeRepository.save(store);
   }
 
@@ -126,7 +136,27 @@ export class StoresService {
     dto: UpdateStoreDto,
   ): Promise<Store> {
     const store = await this.findStoreById(id);
+    this.logger.log(
+      `Updating store ID ${id} with data: ${JSON.stringify(dto)}`,
+    );
     Object.assign(store, dto);
     return await this.storeRepository.save(store);
+  }
+
+  private validateWorkingHours(
+    workingHours: Record<string, { open: string; close: string }>,
+  ): void {
+    for (const day in workingHours) {
+      const { open, close } = workingHours[day];
+      const [openHour, openMin] = open.split(':').map(Number);
+      const [closeHour, closeMin] = close.split(':').map(Number);
+      const openTotal = openHour * 60 + openMin;
+      const closeTotal = closeHour * 60 + closeMin;
+      if (openTotal >= closeTotal) {
+        throw new BadRequestException(
+          `Invalid working hours for ${day}: open time must be before close time.`,
+        );
+      }
+    }
   }
 }
