@@ -12,7 +12,7 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { TelegramUserService } from './telegram/telegram-user.service';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule } from '@nestjs/bull';
+import { BullModule, BullRootModuleOptions } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -27,13 +27,13 @@ import { BullModule } from '@nestjs/bull';
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService): BullRootModuleOptions => ({
         redis: {
           host: configService.get<string>('REDIS_HOST', 'localhost'),
           port: +configService.get<number>('REDIS_PORT', 6379),
         },
       }),
+      inject: [ConfigService],
     }),
     UsersModule,
     StoresModule,

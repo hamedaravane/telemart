@@ -10,7 +10,7 @@ import { BullModule } from '@nestjs/bull';
   imports: [
     TypeOrmModule.forFeature([Payment]),
     BullModule.registerQueue({
-      name: 'PAYMENT_QUEUE', // Ensure the name matches exactly
+      name: 'paymentQueue',
     }),
   ],
   controllers: [PaymentsController],

@@ -17,7 +17,8 @@ export class PaymentProcessor {
     try {
       await this.paymentsService.confirmPayment(txHash, from, to, amount);
       this.logger.log(`✅ Payment confirmed: ${txHash}`);
-    } catch (error) {
+    } catch (err) {
+      const error = err as Error;
       this.logger.error(`❌ Payment processing failed: ${error.message}`);
     }
   }

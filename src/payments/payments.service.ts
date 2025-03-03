@@ -21,7 +21,7 @@ export class PaymentsService {
   constructor(
     @InjectRepository(Payment)
     private paymentsRepository: Repository<Payment>,
-    @InjectQueue('PAYMENT_QUEUE') private paymentQueue: Queue,
+    @InjectQueue('paymentQueue') private paymentQueue: Queue,
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
