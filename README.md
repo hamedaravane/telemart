@@ -1,107 +1,141 @@
-# Telemart
+# Telemart API - A Marketplace Backend Built with NestJS
 
-Telemart is a Telegram Mini-App E-Commerce Platform that enables users to create and manage their online stores, sell products and services, and handle orders and payments seamlessly via the TON blockchain. With Telegram authentication, users can quickly log in without passwords, and the platform’s modular design supports multiple roles (buyer, seller, admin) for a real-life marketplace experience.
+## Overview
 
----
+Telemart API is a scalable and modular backend for a marketplace, built with NestJS and TypeORM. It provides user
+authentication, store management, product listings, orders, reviews, payments, and location-based services.
 
-## Table of Contents
-
-- [Features](#features)
-- [Architecture](#architecture)
-- [Technologies Used](#technologies-used)
-- [API Endpoints](#api-endpoints)
-- [Contact](#contact)
+This project follows a modular structure, allowing easy feature expansion. It also includes Swagger API documentation,
+making it easier for developers to explore available endpoints.
 
 ---
 
 ## Features
 
-- **Telegram Authentication**: Log in seamlessly using Telegram (no passwords required).
-- **Multi-Role Users**: Every user can act as a buyer, seller, or both.
-- **Store Management**: Sellers can create and manage multiple stores with detailed information and social media links.
-- **Product Listings**: Create products with variants and attributes to showcase a wide range of offerings (physical, digital, or services).
-- **Order Processing**: Manage orders with multiple items from the same store, complete with shipment tracking and status updates.
-- **TON Blockchain Payments**: Fast, secure, and decentralized payments using the TON cryptocurrency.
-- **Reviews & Ratings**: Buyers can leave detailed reviews, including text, images, and videos, with support for seller replies and report functionality.
-- **Notifications (Future Implementation)**: Framework in place for sending notifications for order updates, payments, and more.
+- Authentication and user management
+- Store and product management
+- Order processing and payments
+- Reviews, ratings, and reports
+- Location-based filtering (countries, states, cities)
+- Telegram user authentication support
+- File uploads with S3 integration
+- Background job processing using BullMQ
+- Automatic location synchronization from GeoNames API
+- Swagger API documentation for easy development
 
 ---
 
-## Architecture
+## API Documentation
 
-Telemart is built with a modular architecture using NestJS, which ensures scalability, maintainability, and ease of development. The core modules include:
+### Swagger API Docs
 
-- **Auth Module**: Handles Telegram authentication and data validation.
-- **Users Module**: Manages user profiles and role upgrades.
-- **Stores Module**: Enables store creation and management.
-- **Products Module**: Manages product listings, attributes, and variants.
-- **Orders Module**: Processes orders, calculates totals, and enforces that order items come from the same store.
-- **Payments Module**: Integrates with the TON blockchain for processing payments and managing state transitions.
-- **Reviews Module**: Allows buyers to leave reviews, reply, and report inappropriate content.
-- **Notifications Module**: (Stub) For future implementation of notification services.
+Once the server is running, access the API documentation at:
 
----
+```
+http://localhost:3000/api
+```
 
-## Technologies Used
+The Swagger documentation provides:
 
-- **NestJS**: A progressive Node.js framework for building efficient and scalable server-side applications.
-- **TypeORM**: An ORM that supports TypeScript and provides easy integration with PostgreSQL.
-- **PostgreSQL**: The relational database for storing project data.
-- **Telegram API**: For authenticating users via Telegram.
-- **TON Blockchain**: For decentralized, fast, and low-fee cryptocurrency payments.
-- **Class-Validator & Class-Transformer**: For validating and transforming incoming DTOs.
+- All available endpoints
+- Request and response structures
+- Validation rules
+- Example payloads
 
 ---
 
-## API Endpoints
+## Configuration
 
-Below are some example endpoints. (Use tools like [Postman](https://www.postman.com/) or [Swagger](https://swagger.io/) for testing.)
+| Environment Variable | Description                           |
+|----------------------|---------------------------------------|
+| `DATABASE_URL`       | PostgreSQL database connection string |
+| `TELEGRAM_BOT_TOKEN` | Telegram Bot API token                |
+| `GEONAMES_USERNAME`  | GeoNames API username                 |
+| `AWS_S3_BUCKET_NAME` | S3 bucket for file uploads            |
+| `REDIS_HOST`         | Redis host for BullMQ                 |
+| `REDIS_PORT`         | Redis port for BullMQ                 |
 
-- **User Authentication**
-    - `POST /users/telegram-auth` — Authenticate a Telegram user.
-
-- **User Management**
-    - `POST /users` — Create a new user.
-    - `GET /users/:telegramId` — Get user details by Telegram ID.
-    - `PATCH /users/upgrade/:telegramId` — Upgrade user role to seller.
-    - `PATCH /users/:id` — Update user details.
-    - `GET /users` — List all users.
-
-- **Store Management**
-    - `POST /stores` — Create a new store.
-    - `GET /stores/:id` — Get store details.
-    - `PATCH /stores/:id` — Update store information.
-    - `GET /stores` — List all stores.
-
-- **Product Management**
-    - `POST /products` — Create a new product.
-    - `GET /products/:id` — Get product details.
-    - `PATCH /products/:id` — Update product details.
-    - `GET /products` — List all products.
-
-- **Order Processing**
-    - `POST /orders` — Create a new order.
-    - `GET /orders/:id` — Get order details.
-    - `PATCH /orders/:id` — Update order status/details.
-    - `GET /orders` — List all orders.
-
-- **Payments**
-    - `POST /payments` — Create a payment.
-    - `GET /payments` — List all payments.
-    - `GET /payments/:id` — Get payment details.
-    - `PUT /payments/:id` — Update payment status/details.
-    - `DELETE /payments/:id` — Delete a payment.
-
-- **Reviews**
-    - `POST /reviews` — Create a review.
-    - `GET /reviews/:id` — Get review details.
-    - `PATCH /reviews/:id/reply` — Add a reply to a review.
-    - `POST /reviews/:id/report` — Report a review.
-    - `GET /reviews` — List all reviews.
+Update the `.env` file with your own credentials before running the project.
 
 ---
 
-## Contact
+## Modules and Features
 
-- **Hamed Arghavan** – [hamedaravane@gmail.com](mailto:hamedaravane@gmail.com)
-- **Project Link:** [https://github.com/hamedaravane/telemart](https://github.com/hamedaravane/telemart)
+### Users Module
+
+- Authentication via Telegram
+- User role management (buyer, seller)
+- Profile and contact updates
+
+### Stores Module
+
+- Create and manage stores
+- Working hours and category updates
+- Store logo uploads using S3
+
+### Products Module
+
+- Create and update products
+- Product variants and attributes
+- Stock management
+
+### Orders Module
+
+- Create and update orders
+- Order status tracking
+- Shipping address updates
+
+### Payments Module
+
+- Create and update payments
+- Transaction processing
+- BullMQ for payment queue processing
+
+### Reviews Module
+
+- Write and read product reviews
+- Report inappropriate reviews
+- Seller replies to reviews
+
+### Locations Module
+
+- Synchronization of countries, states, and cities from GeoNames API
+- Location-based filtering for users and stores
+
+---
+
+## Running Tests
+
+To run unit tests:
+
+```sh
+  npm run test
+```
+
+To run integration tests:
+
+```sh
+  npm run test:e2e
+```
+
+---
+
+## Deployment
+
+### Step 1: Build for Production
+
+```sh
+  npm run build
+```
+
+### Step 2: Run in Production Mode
+
+```sh
+  npm run start:prod
+```
+
+---
+
+## License
+
+This project is licensed under the MIT License.
