@@ -6,9 +6,11 @@ import {
 import * as crypto from 'crypto';
 import { WebAppInitData, WebAppUser } from './types';
 import { ConfigService } from '@nestjs/config';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 const DEFAULT24HOURS = 86400;
 
+@ApiTags('Telegram User')
 @Injectable()
 export class TelegramUserService {
   private readonly TELEGRAM_BOT_TOKEN: string;
@@ -19,6 +21,21 @@ export class TelegramUserService {
     this.TELEGRAM_BOT_TOKEN = token;
   }
 
+  /**
+   * Validates the Telegram Init Data for user authentication
+   * @param initData The initialization data received from Telegram Web App
+   * @param maxAgeSeconds Maximum age (in seconds) for the authentication data
+   * @returns Validated WebAppInitData
+   */
+  @ApiOperation({
+    summary: 'Validate Telegram Init Data',
+    description:
+      'Checks the integrity and validity of the init data from Telegram Web App.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully validated Telegram Init Data',
+  })
   validateTelegramInitData(
     initData: string,
     maxAgeSeconds: number = DEFAULT24HOURS,
@@ -79,6 +96,20 @@ export class TelegramUserService {
     };
   }
 
+  /**
+   * Validates the Telegram Init Data and extracts the authenticated user.
+   * @param initData The initialization data received from Telegram Web App
+   * @returns WebAppUser The authenticated user
+   */
+  @ApiOperation({
+    summary: 'Validate and Get User',
+    description:
+      'Validates Telegram Web App init data and extracts the user details.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Successfully validated and retrieved user data',
+  })
   validateAndGetUser(initData: string): WebAppUser {
     const webAppInitData: WebAppInitData =
       this.validateTelegramInitData(initData);
@@ -96,6 +127,11 @@ export class TelegramUserService {
   }
 }
 
+/**
+ * Safely parses a JSON string to an object.
+ * @param jsonString The JSON string to parse
+ * @returns Parsed object or undefined if parsing fails
+ */
 function safeJsonParse<T>(jsonString: string): T | undefined {
   try {
     return JSON.parse(jsonString) as T;
