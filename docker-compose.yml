@@ -1,20 +1,14 @@
 version: '3.8'
-services:
-  app:
-    build: .
-    container_name: nestjs-app
-    restart: always
-    ports:
-      - "3000:3000"
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - redis
 
+services:
   redis:
-    image: redis
-    container_name: my-redis
+    image: "redis:alpine"
+    container_name: redis_service
     restart: always
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
