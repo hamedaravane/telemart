@@ -12,6 +12,7 @@ import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { v4 as uuidv4 } from 'uuid';
 import { Queue } from 'bullmq';
+import { InjectQueue } from '@nestjs/bull';
 
 @Injectable()
 export class PaymentsService {
@@ -20,7 +21,7 @@ export class PaymentsService {
   constructor(
     @InjectRepository(Payment)
     private paymentsRepository: Repository<Payment>,
-    @Inject('PAYMENT_QUEUE') private paymentQueue: Queue,
+    @InjectQueue('PAYMENT_QUEUE') private paymentQueue: Queue,
   ) {}
 
   async create(createPaymentDto: CreatePaymentDto): Promise<Payment> {
