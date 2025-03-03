@@ -12,8 +12,9 @@ import { ReviewsModule } from './reviews/reviews.module';
 import { TelegramUserService } from './telegram/telegram-user.service';
 import { HttpModule } from '@nestjs/axios';
 import { ScheduleModule } from '@nestjs/schedule';
-import { BullModule, BullRootModuleOptions } from '@nestjs/bull';
+import { BullModule, BullModuleAsyncOptions, BullRootModuleOptions } from '@nestjs/bull';
 
+// @ts-ignore
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -27,7 +28,6 @@ import { BullModule, BullRootModuleOptions } from '@nestjs/bull';
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
-      inject: [ConfigService],
       useFactory: (configService: ConfigService): BullRootModuleOptions => ({
         redis: {
           host: configService.get<string>('REDIS_HOST_PRIVATE', 'localhost'),
@@ -35,6 +35,7 @@ import { BullModule, BullRootModuleOptions } from '@nestjs/bull';
           password: configService.get<string>('REDIS_PASSWORD', ''),
         },
       }),
+      inject: [ConfigService],
     }),
     UsersModule,
     StoresModule,
