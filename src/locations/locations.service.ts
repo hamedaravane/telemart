@@ -4,7 +4,9 @@ import { Repository } from 'typeorm';
 import { Country } from './country.entity';
 import { State } from './state.entity';
 import { City } from './city.entity';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Locations Service')
 @Injectable()
 export class LocationsService {
   constructor(
@@ -26,7 +28,7 @@ export class LocationsService {
       relations: ['states'],
     });
     if (!country) {
-      throw new NotFoundException(`Country with id ${id} not found`);
+      throw new NotFoundException(`Country with ID ${id} not found`);
     }
     return country;
   }
@@ -36,7 +38,7 @@ export class LocationsService {
       where: { id: countryId },
     });
     if (!country) {
-      throw new NotFoundException(`Country with id ${countryId} not found`);
+      throw new NotFoundException(`Country with ID ${countryId} not found`);
     }
 
     return this.stateRepository.find({
@@ -51,7 +53,7 @@ export class LocationsService {
       relations: ['country', 'cities'],
     });
     if (!state) {
-      throw new NotFoundException(`State with id ${id} not found`);
+      throw new NotFoundException(`State with ID ${id} not found`);
     }
     return state;
   }
@@ -61,7 +63,7 @@ export class LocationsService {
       where: { id: stateId },
     });
     if (!state) {
-      throw new NotFoundException(`State with id ${stateId} not found`);
+      throw new NotFoundException(`State with ID ${stateId} not found`);
     }
 
     return this.cityRepository.find({
@@ -76,7 +78,7 @@ export class LocationsService {
       relations: ['state', 'state.country'],
     });
     if (!city) {
-      throw new NotFoundException(`City with id ${id} not found`);
+      throw new NotFoundException(`City with ID ${id} not found`);
     }
     return city;
   }
