@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -51,35 +52,21 @@ export class Order {
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   items: OrderItem[];
 
+  @ApiProperty({ description: 'Shipment details for this order' })
   @OneToOne(() => OrderShipment, (shipment) => shipment.order, {
     cascade: true,
   })
+  @JoinColumn()
   shipment: OrderShipment;
 
-  @ApiProperty({
-    description: 'Payments related to this order',
-    type: [Payment],
-  })
-  @OneToMany(() => Payment, (payment) => payment.order)
-  payments: Payment[];
+  @ApiProperty({ description: 'Payment details for this order' })
+  @OneToOne(() => Payment, (payment) => payment.order, { cascade: true })
+  @JoinColumn()
+  payment: Payment;
 
   @ApiProperty({ description: 'Total amount for the order', example: 250.5 })
   @Column('decimal', { precision: 10, scale: 2 })
   totalAmount: number;
-
-  @ApiPropertyOptional({
-    description: 'Transaction ID for payment',
-    example: 'txn_123456',
-  })
-  @Column({ nullable: true })
-  paymentTransactionId: string;
-
-  @ApiPropertyOptional({
-    description: 'Shipping address',
-    example: '123 Main St, City, Country',
-  })
-  @Column({ nullable: true })
-  shippingAddress: string;
 
   @ApiPropertyOptional({
     description: 'Delivery date',

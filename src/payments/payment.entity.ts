@@ -3,7 +3,9 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  JoinColumn,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -33,10 +35,11 @@ export class Payment {
   paymentId: string;
 
   @ApiProperty({ description: 'Order associated with the payment' })
-  @ManyToOne(() => Order, (order) => order.payments, {
+  @OneToOne(() => Order, (order) => order.payment, {
     nullable: true,
     onDelete: 'SET NULL',
   })
+  @JoinColumn()
   order: Order;
 
   @ApiProperty({ description: 'User associated with the payment' })
