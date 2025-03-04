@@ -4,6 +4,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -50,14 +51,10 @@ export class Order {
   @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
   items: OrderItem[];
 
-  @ApiProperty({
-    description: 'List of shipments for this order',
-    type: [OrderShipment],
-  })
-  @OneToMany(() => OrderShipment, (shipment) => shipment.order, {
+  @OneToOne(() => OrderShipment, (shipment) => shipment.order, {
     cascade: true,
   })
-  shipments: OrderShipment[];
+  shipment: OrderShipment;
 
   @ApiProperty({
     description: 'Payments related to this order',

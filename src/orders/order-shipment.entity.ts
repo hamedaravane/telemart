@@ -2,7 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
+  OneToOne,
+  JoinColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Order } from './order.entity';
@@ -12,7 +13,8 @@ export class OrderShipment {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Order, (order) => order.shipments, { onDelete: 'CASCADE' })
+  @OneToOne(() => Order, (order) => order.shipment, { onDelete: 'CASCADE' })
+  @JoinColumn()
   order: Order;
 
   @Column()
