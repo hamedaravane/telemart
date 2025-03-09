@@ -12,74 +12,99 @@ import { MarketPageResponse } from './market.entity';
 @Injectable()
 export class MarketService {
   private readonly logger = new Logger(MarketService.name);
-  private stores = new Array<Store>();
-  private products = new Array<Product>();
+
   constructor(
     private readonly storeService: StoresService,
     private readonly productService: ProductsService,
   ) {}
 
-  private async fillStores() {
-    this.logger.log('Getting stores');
-    this.stores = await this.storeService.getStores();
+  /**
+   * Fetch stores and products concurrently.
+   */
+  private async fetchMarketData(): Promise<{
+    stores: Store[];
+    products: Product[];
+  }> {
+    this.logger.log('Fetching market data');
+    const [stores, products] = await Promise.all([
+      this.storeService.getStores(),
+      this.productService.getProducts(),
+    ]);
+    return { stores, products };
   }
 
-  private async fillProducts() {
-    this.logger.log('Getting products');
-    this.products = await this.productService.getProducts();
+  /**
+   * Filters and returns only approved products.
+   */
+  private getApprovedProducts(products: Product[]): Product[] {
+    return products.filter((product) => product.isApproved);
   }
 
-  private getApprovedProducts(): Product[] {
-    return this.products.filter((product) => product.isApproved);
+  /**
+   * Sorts approved products by creation date (newest first).
+   */
+  private getSortedProducts(products: Product[]): Product[] {
+    return this.getApprovedProducts(products).sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
   }
 
-  private getSortedProducts() {
-    return this.getApprovedProducts().sort((a, b) => {
-      return a.createdAt.getTime() - b.createdAt.getTime();
-    });
+  /**
+   * Returns the most recent products.
+   */
+  private getRecentProducts(products: Product[]) {
+    return this.getSortedProducts(products).slice(0, 8).map(mapProductPreview);
   }
 
-  private getRecentProducts() {
-    return this.getSortedProducts().slice(0, 8).map(mapProductPreview);
+  /**
+   * Returns the featured products.
+   */
+  private getFeaturedProducts(products: Product[]) {
+    return this.getSortedProducts(products).slice(0, 8).map(mapProductPreview);
   }
 
-  private getFeaturedProducts() {
-    return this.getSortedProducts().slice(0, 8).map(mapProductPreview);
-  }
-
-  private getTopRatedStores() {
-    return this.stores
+  /**
+   * Returns the top-rated stores.
+   */
+  private getTopRatedStores(stores: Store[]) {
+    return stores
       .sort((a, b) => b.reputation - a.reputation)
       .slice(0, 10)
       .map(mapStorePreview);
   }
 
-  private getCategoryProducts() {
-    const approvedProducts = this.getApprovedProducts();
+  /**
+   * Returns categorized products by type.
+   */
+  private getCategoryProducts(products: Product[]) {
+    const approvedProducts = this.getApprovedProducts(products);
     return {
-      digital: approvedProducts
+      [ProductType.DIGITAL]: approvedProducts
         .filter((p) => p.productType === ProductType.DIGITAL)
         .slice(0, 4)
         .map(mapProductPreview),
-      physical: approvedProducts
+      [ProductType.PHYSICAL]: approvedProducts
         .filter((p) => p.productType === ProductType.PHYSICAL)
         .slice(0, 4)
         .map(mapProductPreview),
-      service: approvedProducts
-        .filter((p) => p.productType === ProductType.DIGITAL)
+      [ProductType.SERVICE]: approvedProducts
+        .filter((p) => p.productType === ProductType.SERVICE)
         .slice(0, 4)
         .map(mapProductPreview),
     };
   }
 
+  /**
+   * Fetches market data and returns a structured response.
+   */
   async getMarketData(): Promise<MarketPageResponse> {
-    await this.fillStores();
-    await this.fillProducts();
+    const { stores, products } = await this.fetchMarketData();
+
     return {
-      categoryProducts: this.getCategoryProducts(),
-      featuredProducts: this.getFeaturedProducts(),
-      topRatedStores: this.getTopRatedStores(),
-      recentProducts: this.getRecentProducts(),
+      featuredProducts: this.getFeaturedProducts(products),
+      categoryProducts: this.getCategoryProducts(products),
+      topRatedStores: this.getTopRatedStores(stores),
+      recentProducts: this.getRecentProducts(products),
     };
   }
 }
