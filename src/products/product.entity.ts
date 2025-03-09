@@ -11,6 +11,7 @@ import { Store } from '../stores/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
 import { Review } from '../reviews/review.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export enum ProductType {
   PHYSICAL = 'physical',
@@ -74,4 +75,44 @@ export class Product {
 
   @UpdateDateColumn()
   updatedAt: Date;
+}
+
+export class ProductPreview {
+  @ApiProperty({
+    example: 1,
+    description: 'The unique identifier of the product',
+  })
+  id: number;
+
+  @ApiProperty({ example: 'Laptop', description: 'The name of the product' })
+  name: string;
+
+  @ApiProperty({
+    example: 100,
+    description: 'The price of the product',
+  })
+  price: number;
+
+  @ApiProperty({
+    example: 'https://example.com/image.jpg',
+    description: 'The URL of the product image',
+  })
+  imageUrl: string;
+
+  @ApiProperty()
+  productType: ProductType;
+
+  @ApiProperty()
+  stock?: number;
+}
+
+export function mapProductPreview(product: Product): ProductPreview {
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    imageUrl: product.imageUrl,
+    productType: product.productType,
+    stock: product.stock,
+  };
 }

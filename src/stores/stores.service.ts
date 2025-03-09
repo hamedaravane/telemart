@@ -46,6 +46,10 @@ export class StoresService {
     });
   }
 
+  async getStores(): Promise<Store[]> {
+    return await this.storeRepository.find({ cache: true });
+  }
+
   async createStoreBasic(user: User, dto: CreateStoreBasicDto): Promise<Store> {
     const store = this.storeRepository.create({
       ...dto,

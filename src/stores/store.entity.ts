@@ -17,6 +17,7 @@ import { StoreCategory } from './categories';
 import { Country } from '../locations/country.entity';
 import { State } from '../locations/state.entity';
 import { City } from '../locations/city.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'stores' })
 export class Store {
@@ -84,4 +85,34 @@ export class Store {
 
   @DeleteDateColumn()
   deletedAt: Date;
+}
+
+export class StorePreview {
+  @ApiProperty({
+    example: 1,
+    description: 'The unique identifier of the store',
+  })
+  id: number;
+
+  @ApiProperty({ example: 'Tech Store', description: 'The name of the store' })
+  name: string;
+
+  @ApiProperty({
+    example: 'https://example.com/logo.png',
+    description: 'The URL of the store logo',
+    nullable: true,
+  })
+  logoUrl?: string;
+
+  @ApiProperty({ example: 4.5, description: 'The rating of the store' })
+  reputation: number;
+}
+
+export function mapStorePreview(store: Store): StorePreview {
+  return {
+    id: store.id,
+    name: store.name,
+    logoUrl: store.logoUrl,
+    reputation: store.reputation,
+  };
 }

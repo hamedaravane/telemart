@@ -19,6 +19,10 @@ export class ProductsService {
     private productsRepository: Repository<Product>,
   ) {}
 
+  async getProducts() {
+    return this.productsRepository.find({ cache: true });
+  }
+
   async createProduct(createProductDto: CreateProductDto): Promise<Product> {
     const {
       name,
