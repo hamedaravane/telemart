@@ -6,6 +6,7 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 import { Store } from '../stores/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
@@ -21,24 +22,36 @@ export enum ProductType {
 
 @Entity({ name: 'products' })
 export class Product {
+  @ApiProperty({ example: 1, description: 'Product ID' })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({ example: 'Wireless Headphones' })
   @Column({ length: 150 })
   name: string;
 
+  @ApiProperty({ example: 'wireless-headphones', required: false })
+  @Column({ nullable: true, unique: true })
+  @Index()
+  slug?: string;
+
+  @ApiProperty({ example: 199.99 })
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
+  @ApiProperty({ required: false })
   @Column({ nullable: true, type: 'text' })
   description?: string;
 
+  @ApiProperty({ example: 'https://example.com/image.jpg' })
   @Column()
   imageUrl: string;
 
+  @ApiProperty({ type: () => Store })
   @ManyToOne(() => Store, (store) => store.products, { onDelete: 'CASCADE' })
   store: Store;
 
+  @ApiProperty({ enum: ProductType })
   @Column({
     type: 'enum',
     enum: ProductType,
@@ -46,27 +59,33 @@ export class Product {
   })
   productType: ProductType;
 
+  @ApiProperty({ type: () => [ProductAttribute] })
   @OneToMany(() => ProductAttribute, (attribute) => attribute.product, {
     cascade: true,
     eager: true,
   })
   attributes: ProductAttribute[];
 
+  @ApiProperty({ type: () => [ProductVariant] })
   @OneToMany(() => ProductVariant, (variant) => variant.product, {
     cascade: true,
     eager: true,
   })
   variants: ProductVariant[];
 
+  @ApiProperty({ type: () => [Review] })
   @OneToMany(() => Review, (review) => review.product)
   reviews: Review[];
 
+  @ApiProperty({ required: false })
   @Column({ nullable: true })
   downloadLink?: string;
 
+  @ApiProperty({ example: 10, required: false })
   @Column({ nullable: true })
   stock?: number;
 
+  @ApiProperty({ example: true })
   @Column({ default: false })
   isApproved: boolean;
 
@@ -75,44 +94,4 @@ export class Product {
 
   @UpdateDateColumn()
   updatedAt: Date;
-}
-
-export class ProductPreview {
-  @ApiProperty({
-    example: 1,
-    description: 'The unique identifier of the product',
-  })
-  id: number;
-
-  @ApiProperty({ example: 'Laptop', description: 'The name of the product' })
-  name: string;
-
-  @ApiProperty({
-    example: 100,
-    description: 'The price of the product',
-  })
-  price: number;
-
-  @ApiProperty({
-    example: 'https://example.com/image.jpg',
-    description: 'The URL of the product image',
-  })
-  imageUrl: string;
-
-  @ApiProperty()
-  productType: ProductType;
-
-  @ApiProperty()
-  stock?: number;
-}
-
-export function mapProductPreview(product: Product): ProductPreview {
-  return {
-    id: product.id,
-    name: product.name,
-    price: product.price,
-    imageUrl: product.imageUrl,
-    productType: product.productType,
-    stock: product.stock,
-  };
 }
