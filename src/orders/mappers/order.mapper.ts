@@ -11,7 +11,7 @@ export function mapOrderToSummary(order: Order): OrderSummary {
     status: order.status,
     totalAmount: Number(order.totalAmount),
     store: mapStoreToPreview(order.store),
-    deliveryDate: order.deliveryDate,
+    deliveryDate: order.deliveryDate ?? new Date(),
     createdAt: order.createdAt,
   };
 }
@@ -24,19 +24,18 @@ export function mapOrderToDetail(order: Order): OrderDetail {
       quantity: item.quantity,
       totalPrice: Number(item.totalPrice),
     })),
-    shipment: order.shipments?.[0]
+    shipment: order.shipment
       ? {
-          id: order.shipments[0].id,
-          trackingNumber: order.shipments[0].trackingNumber,
-          courierService: order.shipments[0].courierService,
-          deliveryEstimate: order.shipments[0].deliveryEstimate,
-          shippedAt: order.shipments[0].shippedAt,
+          id: order.shipment.id,
+          trackingNumber: order.shipment.trackingNumber,
+          courierService: order.shipment.courierService,
+          deliveryEstimate: order.shipment.deliveryEstimate ?? new Date(),
+          shippedAt: order.shipment.shippedAt,
           status: 'in_transit',
+          carrierTrackingUrl: '',
         }
       : undefined,
-    payment: order.payments?.[0]
-      ? mapPaymentToSummary(order.payments[0])
-      : undefined,
+    payment: order.payment ? mapPaymentToSummary(order.payment) : undefined,
     buyer: mapUserToSummary(order.buyer),
   };
 }

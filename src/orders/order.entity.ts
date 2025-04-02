@@ -10,10 +10,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../users/user.entity';
+import { Store } from '../stores/store.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderShipment } from './order-shipment.entity';
 import { Payment } from '../payments/payment.entity';
-import { Store } from '../stores/store.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum OrderStatus {
@@ -29,7 +29,7 @@ export enum OrderStatus {
 
 @Entity({ name: 'orders' })
 export class Order {
-  @ApiProperty({ description: 'Order ID', example: 1 })
+  @ApiProperty({ example: 1001 })
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -44,42 +44,43 @@ export class Order {
   })
   store: Store;
 
-  @ApiProperty({ description: 'Order status', enum: OrderStatus })
+  @ApiProperty({ enum: OrderStatus })
   @Column({ type: 'enum', enum: OrderStatus, default: OrderStatus.PENDING })
   status: OrderStatus;
 
-  @ApiProperty({ description: 'List of items in the order', type: [OrderItem] })
-  @OneToMany(() => OrderItem, (orderItem) => orderItem.order, { cascade: true })
+  @ApiProperty({ type: () => [OrderItem] })
+  @OneToMany(() => OrderItem, (item) => item.order, { cascade: true })
   items: OrderItem[];
 
-  @ApiProperty({ description: 'Shipment details for this order' })
+  @ApiProperty({ type: () => OrderShipment })
   @OneToOne(() => OrderShipment, (shipment) => shipment.order, {
     cascade: true,
+    nullable: true,
   })
   @JoinColumn()
-  shipment: OrderShipment;
+  shipment?: OrderShipment;
 
-  @ApiProperty({ description: 'Payment details for this order' })
-  @OneToOne(() => Payment, (payment) => payment.order, { cascade: true })
+  @ApiProperty({ type: () => Payment })
+  @OneToOne(() => Payment, (payment) => payment.order, {
+    cascade: true,
+    nullable: true,
+  })
   @JoinColumn()
-  payment: Payment;
+  payment?: Payment;
 
-  @ApiProperty({ description: 'Total amount for the order', example: 250.5 })
+  @ApiProperty({ example: 250.5 })
   @Column('decimal', { precision: 10, scale: 2 })
   totalAmount: number;
 
-  @ApiPropertyOptional({
-    description: 'Delivery date',
-    example: '2024-05-10T12:00:00Z',
-  })
+  @ApiPropertyOptional({ example: '2024-06-15T14:00:00Z' })
   @Column({ type: 'timestamp', nullable: true })
-  deliveryDate: Date;
+  deliveryDate?: Date;
 
-  @ApiProperty({ description: 'Timestamp when the order was created' })
+  @ApiProperty({ type: Date })
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty({ description: 'Timestamp when the order was last updated' })
+  @ApiProperty({ type: Date })
   @UpdateDateColumn()
   updatedAt: Date;
 }
