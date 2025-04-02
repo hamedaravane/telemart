@@ -5,6 +5,7 @@ import {
   ManyToOne,
   Index,
   Unique,
+  RelationId,
 } from 'typeorm';
 import { State } from './state.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -12,31 +13,40 @@ import { ApiProperty } from '@nestjs/swagger';
 @Entity({ name: 'cities' })
 @Unique(['name', 'state'])
 export class City {
-  @ApiProperty({ example: 1, description: 'City ID' })
+  @ApiProperty({ description: 'City ID', example: 100 })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ example: 'San Francisco', description: 'City name' })
+  @ApiProperty({ description: 'City name', example: 'San Francisco' })
   @Column()
   @Index()
   name: string;
 
-  @ApiProperty({ description: 'Localized city names' })
+  @ApiProperty({ description: 'Slug for the city', example: 'san-francisco' })
+  @Column({ nullable: true, unique: true })
+  @Index()
+  slug?: string;
+
+  @ApiProperty({ description: 'Local name translations' })
   @Column({ type: 'json', nullable: true })
   nameLocal: Record<string, string>;
 
-  @ApiProperty({ example: '94105', description: 'Postal code' })
+  @ApiProperty({ description: 'Postal code', example: '94103' })
   @Column({ nullable: true })
   postalCode: string;
 
-  @ApiProperty({ example: 37.7749, description: 'Latitude of the city' })
+  @ApiProperty({ description: 'Latitude', example: 37.7749 })
   @Column({ type: 'float', nullable: true })
   latitude: number;
 
-  @ApiProperty({ example: -122.4194, description: 'Longitude of the city' })
+  @ApiProperty({ description: 'Longitude', example: -122.4194 })
   @Column({ type: 'float', nullable: true })
   longitude: number;
 
+  @ApiProperty({ description: 'State this city belongs to' })
   @ManyToOne(() => State, (state) => state.cities, { onDelete: 'CASCADE' })
   state: State;
+
+  @RelationId((city: City) => city.state)
+  stateId: number;
 }

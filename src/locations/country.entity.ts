@@ -1,9 +1,9 @@
 import {
-  Column,
   Entity,
-  Index,
-  OneToMany,
   PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+  Index,
   Unique,
 } from 'typeorm';
 import { State } from './state.entity';
@@ -16,8 +16,8 @@ export class Country {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'Country code', example: 'US' })
-  @Column()
+  @ApiProperty({ description: 'Unique country code', example: 'US' })
+  @Column({ unique: true })
   @Index()
   code: string;
 
@@ -25,6 +25,14 @@ export class Country {
   @Column()
   @Index()
   name: string;
+
+  @ApiProperty({
+    description: 'Slug for URL-friendly names',
+    example: 'united-states',
+  })
+  @Column({ nullable: true, unique: true })
+  @Index()
+  slug?: string;
 
   @ApiProperty({ description: 'Local name translations' })
   @Column({ type: 'json', nullable: true })
@@ -38,7 +46,7 @@ export class Country {
   @Column({ nullable: true })
   currency: string;
 
-  @ApiProperty({ description: 'Geographical region', example: 'North America' })
+  @ApiProperty({ description: 'Region or continent', example: 'North America' })
   @Column({ nullable: true })
   region: string;
 
@@ -46,7 +54,7 @@ export class Country {
   @Column({ nullable: true })
   capital: string;
 
-  @ApiProperty({ description: 'List of states in the country', type: [State] })
+  @ApiProperty({ description: 'States in this country', type: () => [State] })
   @OneToMany(() => State, (state) => state.country)
   states: State[];
 }
