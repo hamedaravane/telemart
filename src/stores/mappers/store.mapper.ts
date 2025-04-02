@@ -7,8 +7,8 @@ export function mapStoreToPreview(store: Store): StorePreview {
   return {
     id: store.id,
     name: store.name,
-    slug: undefined,
-    logo: store.logoUrl ? [{ url: store.logoUrl }] : [],
+    slug: store.slug,
+    logo: store.logoUrl ? { url: store.logoUrl } : undefined,
     reputation: store.reputation,
     isActive: true,
   };
