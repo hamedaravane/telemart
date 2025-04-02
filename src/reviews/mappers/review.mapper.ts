@@ -1,4 +1,6 @@
 import { Review } from '../review.entity';
+import { ReviewReply } from '../review-reply.entity';
+import { ReviewReport } from '../review-report.entity';
 import {
   ReviewDetail,
   ReviewPreview,
@@ -6,8 +8,6 @@ import {
   ReviewReportPreview,
 } from './types';
 import { mapUserToPublicPreview } from '../../users/mappers/user.mapper';
-import { ReviewReply } from '../review-reply.entity';
-import { ReviewReport } from '../review-report.entity';
 
 export function mapReviewToPreview(review: Review): ReviewPreview {
   return {
@@ -27,11 +27,13 @@ export function mapReviewToDetail(review: Review): ReviewDetail {
     videos: review.videos ?? undefined,
     replies: review.replies?.map(mapReviewReplyToPreview) ?? [],
     reports: review.reports?.map(mapReviewReportToPreview) ?? [],
-    isFlagged: !!review.reports?.length,
+    isFlagged: review.reports?.length > 0 || undefined,
   };
 }
 
-function mapReviewReplyToPreview(reply: ReviewReply): ReviewReplyPreview {
+export function mapReviewReplyToPreview(
+  reply: ReviewReply,
+): ReviewReplyPreview {
   return {
     id: reply.id,
     seller: mapUserToPublicPreview(reply.seller),
@@ -40,7 +42,9 @@ function mapReviewReplyToPreview(reply: ReviewReply): ReviewReplyPreview {
   };
 }
 
-function mapReviewReportToPreview(report: ReviewReport): ReviewReportPreview {
+export function mapReviewReportToPreview(
+  report: ReviewReport,
+): ReviewReportPreview {
   return {
     id: report.id,
     reportedBy: mapUserToPublicPreview(report.reportedBy),
