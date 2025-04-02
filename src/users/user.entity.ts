@@ -17,6 +17,7 @@ import { Country } from '../locations/country.entity';
 import { State } from '../locations/state.entity';
 import { City } from '../locations/city.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Address } from '../locations/address.entity';
 
 export enum UserRole {
   BUYER = 'buyer',
@@ -86,6 +87,9 @@ export class User {
   @ApiProperty({ description: 'User city (if available)', required: false })
   @ManyToOne(() => City, { nullable: true })
   city?: City;
+
+  @OneToMany(() => Address, (address) => address.user)
+  addresses: Address[];
 
   @OneToMany(() => Order, (order) => order.buyer)
   orders: Order[];

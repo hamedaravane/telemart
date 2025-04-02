@@ -19,6 +19,7 @@ import { Country } from '../locations/country.entity';
 import { State } from '../locations/state.entity';
 import { City } from '../locations/city.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Address } from '../locations/address.entity';
 
 @Entity({ name: 'stores' })
 export class Store {
@@ -89,6 +90,9 @@ export class Store {
   @ApiProperty({ type: () => City, required: false })
   @ManyToOne(() => City, { nullable: true })
   city?: City;
+
+  @OneToMany(() => Address, (address) => address.store)
+  addresses?: Address[];
 
   @ApiProperty({
     type: 'object',
