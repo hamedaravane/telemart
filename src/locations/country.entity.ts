@@ -1,19 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from 'typeorm';
 import { State } from './state.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'countries' })
+@Unique(['code'])
 export class Country {
   @ApiProperty({ description: 'Country ID', example: 1 })
   @PrimaryGeneratedColumn()
   id: number;
 
   @ApiProperty({ description: 'Country code', example: 'US' })
-  @Column({ unique: true })
+  @Column()
+  @Index()
   code: string;
 
   @ApiProperty({ description: 'Country name', example: 'United States' })
   @Column()
+  @Index()
   name: string;
 
   @ApiProperty({ description: 'Local name translations' })
