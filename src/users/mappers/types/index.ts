@@ -1,6 +1,8 @@
 import { UserRole } from '../../user.entity';
 import { StorePreview } from '../../../stores/mappers/types';
 import { OrderSummary } from '../../../orders/mappers/types';
+import { Address } from '../../../locations/mappers/types';
+import { Media } from '../../../common/mappers/types';
 
 export interface UserPublicPreview {
   id: number | string;

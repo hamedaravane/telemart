@@ -5,6 +5,12 @@ import { Country } from './country.entity';
 import { State } from './state.entity';
 import { City } from './city.entity';
 import { ApiTags } from '@nestjs/swagger';
+import {
+  mapCityToCanonical,
+  mapCountryToCanonical,
+  mapStateToCanonical,
+} from './mappers/location.mapper';
+import { NearestLocationResponse } from './mappers/types';
 
 @ApiTags('Locations Service')
 @Injectable()
@@ -81,5 +87,34 @@ export class LocationsService {
       throw new NotFoundException(`City with ID ${id} not found`);
     }
     return city;
+  }
+
+  async getNearestLocation(
+    lat: number,
+    lng: number,
+  ): Promise<NearestLocationResponse> {
+    const cities = await this.cityRepository.find({
+      relations: ['state', 'state.country'],
+    });
+
+    let closestCity = cities[0];
+    let closestDistance = Number.MAX_VALUE;
+
+    for (const city of cities) {
+      if (city.latitude == null || city.longitude == null) continue;
+      const dLat = city.latitude - lat;
+      const dLng = city.longitude - lng;
+      const distance = dLat * dLat + dLng * dLng;
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCity = city;
+      }
+    }
+
+    return {
+      city: mapCityToCanonical(closestCity),
+      state: mapStateToCanonical(closestCity.state),
+      country: mapCountryToCanonical(closestCity.state.country),
+    };
   }
 }

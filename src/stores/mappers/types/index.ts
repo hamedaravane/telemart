@@ -1,5 +1,7 @@
 import { UserSummary } from '../../../users/mappers/types';
 import { ProductPreview } from '../../../products/mappers/types';
+import { Media } from '../../../common/mappers/types';
+import { Address } from '../../../locations/mappers/types';
 
 export interface StorePreview {
   id: number | string;

@@ -1,6 +1,7 @@
 import { ReviewPreview } from '../../../reviews/mappers/types';
 import { StorePreview } from '../../../stores/mappers/types';
 import { ProductType } from '../../product.entity';
+import { Media } from '../../../common/mappers/types';
 
 export interface ProductPreview {
   id: number | string;
