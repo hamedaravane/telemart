@@ -11,26 +11,23 @@ import { ApiProperty } from '@nestjs/swagger';
 
 @Entity({ name: 'review_replies' })
 export class ReviewReply {
-  @ApiProperty({ description: 'Unique ID of the reply', example: 1 })
+  @ApiProperty({ example: 1 })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ description: 'Review to which this reply belongs' })
+  @ApiProperty({ description: 'The review this reply belongs to' })
   @ManyToOne(() => Review, (review) => review.replies, { onDelete: 'CASCADE' })
   review: Review;
 
-  @ApiProperty({ description: 'Seller who replied to the review' })
+  @ApiProperty({ description: 'Seller responding to the review' })
   @ManyToOne(() => User, { eager: true })
   seller: User;
 
-  @ApiProperty({
-    description: 'Reply text',
-    example: 'Thank you for your feedback!',
-  })
+  @ApiProperty({ example: 'Thanks for your feedback!' })
   @Column({ type: 'text' })
   replyText: string;
 
-  @ApiProperty({ description: 'Timestamp when the reply was created' })
+  @ApiProperty()
   @CreateDateColumn()
   createdAt: Date;
 }

@@ -1,5 +1,5 @@
 import { Payment } from '../payment.entity';
-import { PaymentSummary, PaymentDetail } from './types';
+import { PaymentDetail, PaymentSummary } from './types';
 import { mapOrderToSummary } from '../../orders/mappers/order.mapper';
 import { mapUserToSummary } from '../../users/mappers/user.mapper';
 
@@ -8,7 +8,7 @@ export function mapPaymentToSummary(payment: Payment): PaymentSummary {
     id: payment.id,
     status: payment.status,
     amount: payment.amount,
-    transactionHash: payment.transactionHash,
+    transactionHash: payment.transactionHash ?? '',
     createdAt: payment.createdAt,
   };
 }

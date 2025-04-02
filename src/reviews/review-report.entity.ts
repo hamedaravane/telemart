@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Review } from './review.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum ReportReason {
   SPAM = 'Spam',
@@ -29,21 +30,27 @@ export enum ReportReason {
 
 @Entity({ name: 'review_reports' })
 export class ReviewReport {
+  @ApiProperty({ example: 1 })
   @PrimaryGeneratedColumn()
   id: number;
 
+  @ApiProperty({ description: 'Review being reported' })
   @ManyToOne(() => Review, (review) => review.reports, { onDelete: 'CASCADE' })
   review: Review;
 
+  @ApiProperty({ description: 'User who submitted the report' })
   @ManyToOne(() => User, { eager: true })
   reportedBy: User;
 
+  @ApiProperty({ enum: ReportReason })
   @Column({ type: 'enum', enum: ReportReason })
   reason: ReportReason;
 
+  @ApiPropertyOptional({ type: String, nullable: true })
   @Column({ type: 'text', nullable: true })
   comment?: string;
 
+  @ApiProperty()
   @CreateDateColumn()
   reportedAt: Date;
 }
