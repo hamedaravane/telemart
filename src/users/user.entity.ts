@@ -3,11 +3,12 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  Index,
 } from 'typeorm';
 import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
@@ -16,8 +17,8 @@ import { Payment } from '../payments/payment.entity';
 import { Country } from '../locations/country.entity';
 import { State } from '../locations/state.entity';
 import { City } from '../locations/city.entity';
-import { ApiProperty } from '@nestjs/swagger';
 import { Address } from '../locations/address.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {
   BUYER = 'buyer',
@@ -40,54 +41,64 @@ export class User {
   @Column()
   firstName: string;
 
-  @ApiProperty({ example: 'Doe', description: 'Last name', required: false })
+  @ApiPropertyOptional({ example: 'Doe', description: 'Last name' })
   @Column({ nullable: true })
   lastName?: string;
 
-  @ApiProperty({ example: 'alice_handle', required: false })
+  @ApiPropertyOptional({
+    example: 'alice_handle',
+    description: 'Telegram username',
+  })
   @Column({ nullable: true })
   username?: string;
 
-  @ApiProperty({ example: 'en', required: false })
+  @ApiPropertyOptional({ example: 'en', description: 'Preferred language' })
   @Column({ nullable: true })
   languageCode?: string;
 
-  @ApiProperty({ example: true, required: false })
+  @ApiPropertyOptional({ example: true, description: 'Has Telegram Premium' })
   @Column({ nullable: true })
   hasTelegramPremium?: boolean;
 
-  @ApiProperty({ example: 'https://example.com/photo.jpg', required: false })
+  @ApiPropertyOptional({ example: 'https://example.com/photo.jpg' })
   @Column({ nullable: true })
   photoUrl?: string;
 
-  @ApiProperty({ example: '+1234567890', required: false })
+  @ApiPropertyOptional({ example: '+1234567890' })
   @Column({ unique: true, nullable: true, length: 20 })
   phoneNumber?: string;
 
-  @ApiProperty({ example: 'alice@example.com', required: false })
+  @ApiPropertyOptional({ example: 'alice@example.com' })
   @Column({ unique: true, nullable: true })
   email?: string;
 
-  @ApiProperty({ enum: UserRole, example: UserRole.BUYER })
+  @ApiProperty({ enum: UserRole, default: UserRole.BUYER })
   @Column({ type: 'enum', enum: UserRole, default: UserRole.BUYER })
   role: UserRole;
 
-  @ApiProperty({ example: '0xABC123...', required: false })
+  @ApiPropertyOptional({
+    example: '0xABC123...',
+    description: 'User wallet address',
+  })
   @Column({ nullable: true })
   walletAddress?: string;
 
-  @ApiProperty({ description: 'User country (if available)', required: false })
-  @ManyToOne(() => Country, { nullable: true })
+  @ApiPropertyOptional({ type: () => Country })
+  @ManyToOne(() => Country, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
   country?: Country;
 
-  @ApiProperty({ description: 'User state (if available)', required: false })
-  @ManyToOne(() => State, { nullable: true })
+  @ApiPropertyOptional({ type: () => State })
+  @ManyToOne(() => State, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
   state?: State;
 
-  @ApiProperty({ description: 'User city (if available)', required: false })
-  @ManyToOne(() => City, { nullable: true })
+  @ApiPropertyOptional({ type: () => City })
+  @ManyToOne(() => City, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
   city?: City;
 
+  @ApiPropertyOptional({ type: () => [Address] })
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
 
@@ -111,6 +122,7 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @ApiPropertyOptional()
   @DeleteDateColumn()
   deletedAt?: Date;
 }

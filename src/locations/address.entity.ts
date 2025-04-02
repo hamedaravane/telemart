@@ -2,14 +2,17 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Store } from '../stores/store.entity';
+import { ApiProperty } from '@nestjs/swagger';
 import { User } from '../users/user.entity';
-import { City } from './city.entity';
-import { State } from './state.entity';
 import { Country } from './country.entity';
+import { State } from './state.entity';
+import { City } from './city.entity';
+import { Store } from '../stores/store.entity';
 
 export enum AddressType {
   USER = 'user',
@@ -21,32 +24,76 @@ export enum AddressType {
 
 @Entity('addresses')
 export class Address {
+  @ApiProperty({ example: 1, description: 'Unique address ID' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column() streetLine1: string;
-  @Column({ nullable: true }) streetLine2?: string;
-  @Column({ nullable: true }) postalCode?: string;
-  @Column({ type: 'decimal', precision: 10, scale: 6 }) latitude: number;
-  @Column({ type: 'decimal', precision: 10, scale: 6 }) longitude: number;
+  @ApiProperty({ example: '221B Baker Street' })
+  @Column()
+  streetLine1: string;
 
-  @Column({ nullable: true }) label?: string;
-  @Column({ type: 'enum', enum: AddressType }) type:
-    | 'user'
-    | 'store'
-    | 'shipping'
-    | 'billing'
-    | 'pickup';
-  @Column({ default: false }) isDefault: boolean;
+  @ApiProperty({ example: 'Flat B', required: false })
+  @Column({ nullable: true })
+  streetLine2?: string;
 
-  @ManyToOne(() => Country, { nullable: true }) country?: Country;
-  @ManyToOne(() => State, { nullable: true }) state?: State;
-  @ManyToOne(() => City, { nullable: true }) city?: City;
+  @ApiProperty({ example: 'NW1 6XE', required: false })
+  @Column({ nullable: true })
+  postalCode?: string;
 
-  @ManyToOne(() => User, (user) => user.addresses, { nullable: true })
+  @ApiProperty({ example: 48.8566 })
+  @Column({ type: 'decimal', precision: 10, scale: 6 })
+  @Index()
+  latitude: number;
+
+  @ApiProperty({ example: 2.3522 })
+  @Column({ type: 'decimal', precision: 10, scale: 6 })
+  @Index()
+  longitude: number;
+
+  @ApiProperty({ example: 'Home', required: false })
+  @Column({ nullable: true })
+  label?: string;
+
+  @ApiProperty({ enum: AddressType })
+  @Column({ type: 'enum', enum: AddressType })
+  type: AddressType;
+
+  @ApiProperty({ example: true })
+  @Column({ default: false })
+  isDefault: boolean;
+
+  @ApiProperty({ type: () => Country, required: false })
+  @ManyToOne(() => Country, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
+  country?: Country;
+
+  @ApiProperty({ type: () => State, required: false })
+  @ManyToOne(() => State, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
+  state?: State;
+
+  @ApiProperty({ type: () => City, required: false })
+  @ManyToOne(() => City, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn()
+  city?: City;
+
+  @ApiProperty({ type: () => User, required: false })
+  @ManyToOne(() => User, (user) => user.addresses, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
   user?: User;
-  @ManyToOne(() => Store, (store) => store.addresses, { nullable: true })
+
+  @ApiProperty({ type: () => Store, required: false })
+  @ManyToOne(() => Store, (store) => store.addresses, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn()
   store?: Store;
 
-  @CreateDateColumn() createdAt: Date;
+  @ApiProperty()
+  @CreateDateColumn()
+  createdAt: Date;
 }
