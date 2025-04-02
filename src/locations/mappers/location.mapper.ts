@@ -3,10 +3,10 @@ import { State } from '../state.entity';
 import { City } from '../city.entity';
 import { CanonicalLocation } from './types';
 
-export function mapCountryToCanonical(c: Country): CanonicalLocation {
+export function mapCountryToCanonical(country: Country): CanonicalLocation {
   return {
-    id: c.id,
-    name: c.name,
+    id: country.id,
+    name: country.name,
     type: 'country' as const,
     parentId: undefined,
     postalCode: undefined,
@@ -15,12 +15,12 @@ export function mapCountryToCanonical(c: Country): CanonicalLocation {
   };
 }
 
-export function mapStateToCanonical(s: State): CanonicalLocation {
+export function mapStateToCanonical(state: State): CanonicalLocation {
   return {
-    id: s.id,
-    name: s.name,
+    id: state.id,
+    name: state.name,
     type: 'state' as const,
-    parentId: s.country?.id ?? undefined,
+    parentId: state.country?.id ?? undefined,
     postalCode: undefined,
     latitude: undefined,
     longitude: undefined,
