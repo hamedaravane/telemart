@@ -4,8 +4,6 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
-  JoinColumn,
-  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -14,9 +12,6 @@ import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
 import { Store } from '../stores/store.entity';
 import { Payment } from '../payments/payment.entity';
-import { Country } from '../locations/country.entity';
-import { State } from '../locations/state.entity';
-import { City } from '../locations/city.entity';
 import { Address } from '../locations/address.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -26,7 +21,7 @@ export enum UserRole {
   BOTH = 'both',
 }
 
-@Entity({ name: 'users' })
+@Entity('users')
 export class User {
   @ApiProperty({ example: 1, description: 'User ID' })
   @PrimaryGeneratedColumn()
@@ -83,22 +78,7 @@ export class User {
   @Column({ nullable: true })
   walletAddress?: string;
 
-  @ApiPropertyOptional({ type: () => Country })
-  @ManyToOne(() => Country, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  country?: Country;
-
-  @ApiPropertyOptional({ type: () => State })
-  @ManyToOne(() => State, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  state?: State;
-
-  @ApiPropertyOptional({ type: () => City })
-  @ManyToOne(() => City, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  city?: City;
-
-  @ApiPropertyOptional({ type: () => [Address] })
+  @ApiProperty({ type: () => Address, isArray: true })
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
 

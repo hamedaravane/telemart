@@ -4,7 +4,6 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
-  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -12,17 +11,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '../users/user.entity';
 import { Product } from '../products/product.entity';
 import { Order } from '../orders/order.entity';
-import { StoreCategory } from './categories';
-import { Country } from '../locations/country.entity';
-import { State } from '../locations/state.entity';
-import { City } from '../locations/city.entity';
 import { Address } from '../locations/address.entity';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-@Entity({ name: 'stores' })
+@Entity('stores')
 export class Store {
   @ApiProperty({ example: 1, description: 'Store ID' })
   @PrimaryGeneratedColumn()
@@ -48,20 +43,11 @@ export class Store {
   @Column({ nullable: true, type: 'text' })
   description?: string;
 
-  @ApiProperty({ enum: StoreCategory, default: StoreCategory.OTHER })
-  @Column({
-    type: 'enum',
-    enum: StoreCategory,
-    default: StoreCategory.OTHER,
-  })
-  category: StoreCategory;
-
-  @ApiProperty({ description: 'Store owner' })
+  @ApiProperty({ type: () => User })
   @ManyToOne(() => User, (user) => user.stores, { onDelete: 'CASCADE' })
-  @JoinColumn()
   owner: User;
 
-  @ApiProperty({ type: () => [User], description: 'Store admins' })
+  @ApiProperty({ type: () => User, isArray: true })
   @ManyToMany(() => User)
   @JoinTable()
   admins: User[];
@@ -72,30 +58,14 @@ export class Store {
   @OneToMany(() => Order, (order) => order.store)
   orders: Order[];
 
-  @ApiPropertyOptional({ example: '+1234567890' })
+  @ApiProperty({ example: '+1234567890', required: false })
   @Column({ nullable: true, length: 20 })
   contactNumber?: string;
 
-  @ApiPropertyOptional({ example: 'store@example.com' })
+  @ApiProperty({ example: 'store@example.com', required: false })
   @Column({ nullable: true })
   email?: string;
 
-  @ApiPropertyOptional({ type: () => Country })
-  @ManyToOne(() => Country, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  country?: Country;
-
-  @ApiPropertyOptional({ type: () => State })
-  @ManyToOne(() => State, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  state?: State;
-
-  @ApiPropertyOptional({ type: () => City })
-  @ManyToOne(() => City, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn()
-  city?: City;
-
-  @ApiPropertyOptional({ type: () => [Address] })
   @OneToMany(() => Address, (address) => address.store)
   addresses?: Address[];
 
@@ -123,10 +93,7 @@ export class Store {
   @Column({ nullable: true, type: 'json' })
   workingHours?: Record<string, { open: string; close: string }>;
 
-  @ApiPropertyOptional({
-    example: ['tech', 'gaming', 'electronics'],
-    description: 'Tags for filtering or search',
-  })
+  @ApiProperty({ example: ['tech', 'gaming'], required: false })
   @Column({ nullable: true, type: 'simple-array' })
   tags?: string[];
 
