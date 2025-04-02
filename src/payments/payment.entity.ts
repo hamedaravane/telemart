@@ -9,9 +9,9 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Order } from '../orders/order.entity';
 import { User } from '../users/user.entity';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum PaymentStatus {
   PENDING = 'pending',
@@ -23,75 +23,87 @@ export enum PaymentStatus {
 
 @Entity({ name: 'payments' })
 export class Payment {
-  @ApiProperty({ description: 'Unique payment ID', example: '1234-abcd' })
+  @ApiProperty({
+    description: 'Payment ID (UUID)',
+    example: 'd4378b50-9cd9-47ee-b733-bec04e8af001',
+  })
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ApiProperty({
-    description: 'Unique payment identifier',
-    example: 'pay-56789',
+    description: 'Unique payment reference ID',
+    example: 'pay_20250402_abc',
   })
   @Column({ unique: true })
   paymentId: string;
 
-  @ApiProperty({ description: 'Order associated with the payment' })
+  @ApiPropertyOptional({ description: 'Associated order (nullable)' })
   @OneToOne(() => Order, (order) => order.payment, {
     nullable: true,
     onDelete: 'SET NULL',
   })
   @JoinColumn()
-  order: Order;
+  order?: Order;
 
-  @ApiProperty({ description: 'User associated with the payment' })
+  @ApiPropertyOptional({ description: 'User who made the payment (nullable)' })
   @ManyToOne(() => User, (user) => user.payments, {
     nullable: true,
     onDelete: 'SET NULL',
   })
-  user: User;
+  user?: User;
 
-  @ApiProperty({ description: 'Amount of the payment', example: '1000' })
+  @ApiProperty({
+    description: 'Payment amount in smallest unit (e.g. cents)',
+    example: '1000',
+  })
   @Column({ type: 'bigint' })
   amount: string;
 
-  @ApiProperty({ description: 'Current payment status', enum: PaymentStatus })
+  @ApiProperty({ enum: PaymentStatus, description: 'Status of the payment' })
   @Column({ type: 'enum', enum: PaymentStatus, default: PaymentStatus.PENDING })
   status: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'Transaction hash',
-    example: '0xabcdef123456',
+    description: 'Transaction hash on blockchain',
+    example: '0xabc123...',
   })
   @Column({ nullable: true })
   @Index()
-  transactionHash: string;
+  transactionHash?: string;
 
   @ApiPropertyOptional({
     description: 'Sender wallet address',
-    example: '0x1234567890abcdef',
+    example: '0xsender123...',
   })
   @Column({ nullable: true })
-  fromWalletAddress: string;
+  fromWalletAddress?: string;
 
   @ApiPropertyOptional({
     description: 'Receiver wallet address',
-    example: '0xfedcba0987654321',
+    example: '0xreceiver456...',
   })
   @Column({ nullable: true })
-  toWalletAddress: string;
+  toWalletAddress?: string;
 
-  @ApiPropertyOptional({ description: 'Gas fee', example: '0.01' })
+  @ApiPropertyOptional({
+    description: 'Estimated gas fee (bigint string)',
+    example: '20000',
+  })
   @Column({ type: 'bigint', nullable: true })
-  gasFee: string;
+  gasFee?: string;
 
-  @ApiPropertyOptional({ description: 'Commission charged', example: '2.5' })
+  @ApiPropertyOptional({
+    description: 'Commission applied to payment (bigint string)',
+    example: '300',
+  })
   @Column({ type: 'bigint', nullable: true })
-  commission: string;
+  commission?: string;
 
-  @ApiProperty({ description: 'Timestamp when the payment was created' })
+  @ApiProperty({ description: 'When the payment was created' })
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty({ description: 'Timestamp when the payment was last updated' })
+  @ApiProperty({ description: 'When the payment was last updated' })
   @UpdateDateColumn()
   updatedAt: Date;
 }
