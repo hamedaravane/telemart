@@ -1,8 +1,12 @@
-import { Product } from '../product.entity';
-import { ProductDetail, ProductPreview, ProductSummary } from './types';
-import { mapStoreToPreview } from '../../stores/mappers/store.mapper';
+import { Product } from '@/products/product.entity';
+import {
+  ProductDetailDto,
+  ProductPreviewDto,
+  ProductSummaryDto,
+} from '@/products/dto';
+import { mapStoreToPreview } from '@/stores/mappers/store.mapper';
 
-export function mapProductToPreview(product: Product): ProductPreview {
+export function mapProductToPreview(product: Product): ProductPreviewDto {
   return {
     id: product.id,
     name: product.name,
@@ -13,7 +17,7 @@ export function mapProductToPreview(product: Product): ProductPreview {
   };
 }
 
-export function mapProductToSummary(product: Product): ProductSummary {
+export function mapProductToSummary(product: Product): ProductSummaryDto {
   return {
     ...mapProductToPreview(product),
     productType: product.productType,
@@ -21,7 +25,7 @@ export function mapProductToSummary(product: Product): ProductSummary {
   };
 }
 
-export function mapProductToDetail(product: Product): ProductDetail {
+export function mapProductToDetail(product: Product): ProductDetailDto {
   return {
     ...mapProductToSummary(product),
     description: product.description ?? undefined,
