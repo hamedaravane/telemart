@@ -1,9 +1,9 @@
 import { Country } from '../country.entity';
 import { State } from '../state.entity';
 import { City } from '../city.entity';
-import { CanonicalLocation } from './types';
+import { CanonicalLocationDto } from '../dto/canonical-location.dto';
 
-export function mapCountryToCanonical(country: Country): CanonicalLocation {
+export function mapCountryToCanonical(country: Country): CanonicalLocationDto {
   return {
     id: country.id,
     name: country.name,
@@ -15,7 +15,7 @@ export function mapCountryToCanonical(country: Country): CanonicalLocation {
   };
 }
 
-export function mapStateToCanonical(state: State): CanonicalLocation {
+export function mapStateToCanonical(state: State): CanonicalLocationDto {
   return {
     id: state.id,
     name: state.name,
@@ -27,7 +27,7 @@ export function mapStateToCanonical(state: State): CanonicalLocation {
   };
 }
 
-export function mapCityToCanonical(city: City): CanonicalLocation {
+export function mapCityToCanonical(city: City): CanonicalLocationDto {
   return {
     id: city.id,
     name: city.name,
