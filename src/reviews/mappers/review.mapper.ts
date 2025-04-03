@@ -2,14 +2,14 @@ import { Review } from '../review.entity';
 import { ReviewReply } from '../review-reply.entity';
 import { ReviewReport } from '../review-report.entity';
 import {
-  ReviewDetail,
-  ReviewPreview,
-  ReviewReplyPreview,
-  ReviewReportPreview,
-} from './types';
-import { mapUserToPublicPreview } from '../../users/mappers/user.mapper';
+  ReviewDetailDto,
+  ReviewPreviewDto,
+  ReviewReplyPreviewDto,
+  ReviewReportPreviewDto,
+} from '@/reviews/dto';
+import { mapUserToPublicPreview } from '@/users/mappers/user.mapper';
 
-export function mapReviewToPreview(review: Review): ReviewPreview {
+export function mapReviewToPreview(review: Review): ReviewPreviewDto {
   return {
     id: review.id,
     rating: review.rating,
@@ -20,7 +20,7 @@ export function mapReviewToPreview(review: Review): ReviewPreview {
   };
 }
 
-export function mapReviewToDetail(review: Review): ReviewDetail {
+export function mapReviewToDetail(review: Review): ReviewDetailDto {
   return {
     ...mapReviewToPreview(review),
     images: review.images ?? undefined,
@@ -33,7 +33,7 @@ export function mapReviewToDetail(review: Review): ReviewDetail {
 
 export function mapReviewReplyToPreview(
   reply: ReviewReply,
-): ReviewReplyPreview {
+): ReviewReplyPreviewDto {
   return {
     id: reply.id,
     seller: mapUserToPublicPreview(reply.seller),
@@ -44,7 +44,7 @@ export function mapReviewReplyToPreview(
 
 export function mapReviewReportToPreview(
   report: ReviewReport,
-): ReviewReportPreview {
+): ReviewReportPreviewDto {
   return {
     id: report.id,
     reportedBy: mapUserToPublicPreview(report.reportedBy),
