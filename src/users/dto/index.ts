@@ -57,9 +57,9 @@ export class UserSummaryDto extends UserPublicPreviewDto {
   @IsEnum(UserRole)
   role: UserRole;
 
-  @ApiProperty({ type: () => AddressDto })
+  @ApiProperty({ type: () => AddressDto, isArray: true })
   @Type(() => AddressDto)
-  address: AddressDto;
+  addresses: AddressDto[];
 }
 
 export class UserPrivateProfileDto extends UserSummaryDto {

@@ -4,6 +4,7 @@ import {
   UserPublicPreviewDto,
   UserSummaryDto,
 } from '@/users/dto';
+import { mapAddressToDto } from '@/locations/mappers/location.mapper';
 
 export function mapUserToPublicPreview(user: User): UserPublicPreviewDto {
   return {
@@ -20,7 +21,7 @@ export function mapUserToSummary(user: User): UserSummaryDto {
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role,
-    address: undefined, // TODO: should be changes later
+    addresses: user.addresses.map(mapAddressToDto),
   };
 }
 

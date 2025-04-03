@@ -11,7 +11,6 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { StoresService } from './stores.service';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -19,15 +18,16 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { CurrentUser } from '@/common/decorators/current-user.decorator';
-import { User } from '@/users/user.entity';
-import { StoreOwnerGuard } from './store-owner.guard';
 import {
   CreateAddressDto,
   CreateStoreBasicDto,
   CreateStoreTagsDto,
   CreateStoreWorkingHoursDto,
 } from '@/stores/dto';
+import { User } from '@/users/user.entity';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { StoresService } from './stores.service';
+import { StoreOwnerGuard } from './store-owner.guard';
 
 @ApiTags('stores')
 @ApiBearerAuth()

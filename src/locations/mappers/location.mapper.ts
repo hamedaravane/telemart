@@ -1,7 +1,8 @@
 import { Country } from '../entities/country.entity';
 import { State } from '../entities/state.entity';
 import { City } from '../entities/city.entity';
-import { CanonicalLocationDto } from '../dto/canonical-location.dto';
+import { AddressDto, CanonicalLocationDto } from '@/locations/dto';
+import { Address } from '@/locations/entities/address.entity';
 
 export function mapCountryToCanonical(country: Country): CanonicalLocationDto {
   return {
@@ -36,5 +37,35 @@ export function mapCityToCanonical(city: City): CanonicalLocationDto {
     postalCode: city.postalCode ?? undefined,
     latitude: city.latitude ?? undefined,
     longitude: city.longitude ?? undefined,
+  };
+}
+
+export function mapAddressToDto(address: Address): AddressDto {
+  return {
+    id: address.id,
+    label: address.label,
+    country: address.country
+      ? mapCountryToCanonical(address.country)
+      : undefined,
+    state: address.state ? mapStateToCanonical(address.state) : undefined,
+    city: address.city ? mapCityToCanonical(address.city) : undefined,
+    fullText: [
+      address.streetLine1,
+      address.streetLine2,
+      address.city?.name,
+      address.state?.name,
+      address.country?.name,
+      address.postalCode,
+    ]
+      .filter(Boolean)
+      .join(', '),
+    streetLine1: address.streetLine1,
+    streetLine2: address.streetLine2,
+    postalCode: address.postalCode,
+    latitude: Number(address.latitude),
+    longitude: Number(address.longitude),
+    type: address.type,
+    isDefault: address.isDefault,
+    createdAt: address.createdAt,
   };
 }

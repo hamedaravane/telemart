@@ -43,9 +43,10 @@ export class StoreSummaryDto extends StorePreviewDto {
   tags?: string[];
 
   @ApiProperty()
+  @IsOptional()
   @ValidateNested()
   @Type(() => AddressDto)
-  address: AddressDto;
+  addresses?: AddressDto[];
 
   @ApiPropertyOptional()
   @IsOptional()

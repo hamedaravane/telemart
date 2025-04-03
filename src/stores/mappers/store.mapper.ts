@@ -2,6 +2,7 @@ import { Store } from '@/stores/store.entity';
 import { StoreDetailDto, StorePreviewDto, StoreSummaryDto } from '@/stores/dto';
 import { mapUserToSummary } from '@/users/mappers/user.mapper';
 import { mapProductToPreview } from '@/products/mappers/product.mapper';
+import { mapAddressToDto } from '@/locations/mappers/location.mapper';
 
 export function mapStoreToPreview(store: Store): StorePreviewDto {
   return {
@@ -18,7 +19,7 @@ export function mapStoreToSummary(store: Store): StoreSummaryDto {
   return {
     ...mapStoreToPreview(store),
     tags: [],
-    address: null, // TODO: should be developed more
+    addresses: store.addresses?.map(mapAddressToDto),
     description: store.description ?? undefined,
   };
 }

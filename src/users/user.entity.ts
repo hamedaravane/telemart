@@ -8,12 +8,12 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Order } from '../orders/order.entity';
-import { Review } from '../reviews/review.entity';
-import { Store } from '../stores/store.entity';
-import { Payment } from '../payments/payment.entity';
-import { Address } from '../locations/entities/address.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Address } from '@/locations/entities/address.entity';
+import { Order } from '@/orders/order.entity';
+import { Review } from '@/reviews/review.entity';
+import { Store } from '@/stores/store.entity';
+import { Payment } from '@/payments/payment.entity';
 
 export enum UserRole {
   BUYER = 'buyer',
