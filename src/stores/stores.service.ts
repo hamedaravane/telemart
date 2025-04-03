@@ -70,7 +70,7 @@ export class StoresService {
     return store;
   }
 
-  async updateStoreLocation(
+  async updateStoreAddress(
     user: User,
     id: number,
     dto: CreateStoreLocationDto,
@@ -81,7 +81,7 @@ export class StoresService {
     return await this.storeRepository.save(store);
   }
 
-  async updateStoreCategory(
+  async updateStoreTags(
     user: User,
     id: number,
     dto: CreateStoreCategoryDto,

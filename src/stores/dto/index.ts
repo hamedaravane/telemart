@@ -148,3 +148,5 @@ export class CreateStoreLogoDto {
   @IsOptional()
   logoFile?: any;
 }
+
+export class UpdateStore {}

@@ -48,34 +48,34 @@ export class StoresController {
     return await this.storesService.createStoreBasic(user, dto);
   }
 
-  @Patch(':id/location')
+  @Patch(':id/address')
   @UseGuards(StoreOwnerGuard)
-  @ApiOperation({ summary: 'Update store location information' })
+  @ApiOperation({ summary: 'Update store address information' })
   @ApiResponse({
     status: 200,
-    description: 'Store location updated successfully.',
+    description: 'Store address updated successfully.',
   })
-  async updateStoreLocation(
+  async updateStoreAddress(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateAddressDto,
   ) {
-    return await this.storesService.updateStoreLocation(user, id, dto);
+    return await this.storesService.updateStoreAddress(user, id, dto);
   }
 
-  @Patch(':id/category')
+  @Patch(':id/tags')
   @UseGuards(StoreOwnerGuard)
-  @ApiOperation({ summary: 'Update store category' })
+  @ApiOperation({ summary: 'Update store tags' })
   @ApiResponse({
     status: 200,
-    description: 'Store category updated successfully.',
+    description: 'Store tags updated successfully.',
   })
-  async updateStoreCategory(
+  async updateStoreTags(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreTagsDto,
   ) {
-    return await this.storesService.updateStoreCategory(user, id, dto);
+    return await this.storesService.updateStoreTags(user, id, dto);
   }
 
   @Patch(':id/working-hours')
