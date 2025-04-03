@@ -57,8 +57,9 @@ export class AddressDto {
 
   @ApiProperty({ type: () => CanonicalLocationDto })
   @ValidateNested()
+  @IsOptional()
   @Type(() => CanonicalLocationDto)
-  country: CanonicalLocationDto;
+  country?: CanonicalLocationDto;
 
   @ApiPropertyOptional({ type: () => CanonicalLocationDto })
   @IsOptional()
