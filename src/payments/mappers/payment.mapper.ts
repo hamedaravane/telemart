@@ -1,9 +1,9 @@
-import { Payment } from '../payment.entity';
-import { PaymentDetail, PaymentSummary } from './types';
-import { mapOrderToSummary } from '../../orders/mappers/order.mapper';
-import { mapUserToSummary } from '../../users/mappers/user.mapper';
+import { Payment } from '@/payments/payment.entity';
+import { PaymentDetailDto, PaymentSummaryDto } from '@/payments/dto';
+import { mapOrderToSummary } from '@/orders/mappers/order.mapper';
+import { mapUserToSummary } from '@/users/mappers/user.mapper';
 
-export function mapPaymentToSummary(payment: Payment): PaymentSummary {
+export function mapPaymentToSummary(payment: Payment): PaymentSummaryDto {
   return {
     id: payment.id,
     status: payment.status,
@@ -13,14 +13,14 @@ export function mapPaymentToSummary(payment: Payment): PaymentSummary {
   };
 }
 
-export function mapPaymentToDetail(payment: Payment): PaymentDetail {
+export function mapPaymentToDetail(payment: Payment): PaymentDetailDto {
   return {
     ...mapPaymentToSummary(payment),
     gasFee: payment.gasFee ?? undefined,
     commission: payment.commission ?? undefined,
     fromWalletAddress: payment.fromWalletAddress ?? undefined,
     toWalletAddress: payment.toWalletAddress ?? undefined,
-    order: mapOrderToSummary(payment.order),
+    order: mapOrderToSummary(payment.order), // TODO: it has a problem
     user: mapUserToSummary(payment.user),
   };
 }

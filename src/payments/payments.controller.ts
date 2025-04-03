@@ -8,11 +8,10 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
-import { CreatePaymentDto } from './dto/create-payment.dto';
-import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { Payment } from './payment.entity';
+import { CreatePaymentDto, UpdatePaymentDto } from '@/payments/dto';
 
 @ApiTags('Payments')
 @Controller('payments')

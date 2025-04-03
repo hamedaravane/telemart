@@ -8,11 +8,10 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { Order } from './order.entity';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
+import { CreateOrderDto, UpdateOrderDto } from '@/orders/dto';
 
 @ApiTags('Orders')
 @Controller('orders')

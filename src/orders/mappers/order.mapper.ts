@@ -1,11 +1,11 @@
-import { Order } from '../order.entity';
-import { OrderDetail, OrderSummary } from './types';
-import { mapStoreToPreview } from '../../stores/mappers/store.mapper';
-import { mapProductToPreview } from '../../products/mappers/product.mapper';
-import { mapUserToSummary } from '../../users/mappers/user.mapper';
-import { mapPaymentToSummary } from '../../payments/mappers/payment.mapper';
+import { Order } from '@/orders/order.entity';
+import { mapStoreToPreview } from '@/stores/mappers/store.mapper';
+import { mapProductToPreview } from '@/products/mappers/product.mapper';
+import { mapPaymentToSummary } from '@/payments/mappers/payment.mapper';
+import { OrderDetailDto, OrderSummaryDto } from '@/orders/dto';
+import { mapUserToSummary } from '@/users/mappers/user.mapper';
 
-export function mapOrderToSummary(order: Order): OrderSummary {
+export function mapOrderToSummary(order: Order): OrderSummaryDto {
   return {
     id: order.id,
     status: order.status,
@@ -16,7 +16,7 @@ export function mapOrderToSummary(order: Order): OrderSummary {
   };
 }
 
-export function mapOrderToDetail(order: Order): OrderDetail {
+export function mapOrderToDetail(order: Order): OrderDetailDto {
   return {
     ...mapOrderToSummary(order),
     items: order.items.map((item) => ({
