@@ -1,9 +1,9 @@
-import { Store } from '../store.entity';
-import { StorePreview, StoreSummary, StoreDetail } from './types';
-import { mapUserToSummary } from '../../users/mappers/user.mapper';
-import { mapProductToPreview } from '../../products/mappers/product.mapper';
+import { Store } from '@/stores/store.entity';
+import { StoreDetailDto, StorePreviewDto, StoreSummaryDto } from '@/stores/dto';
+import { mapUserToSummary } from '@/users/mappers/user.mapper';
+import { mapProductToPreview } from '@/products/mappers/product.mapper';
 
-export function mapStoreToPreview(store: Store): StorePreview {
+export function mapStoreToPreview(store: Store): StorePreviewDto {
   return {
     id: store.id,
     name: store.name,
@@ -14,16 +14,16 @@ export function mapStoreToPreview(store: Store): StorePreview {
   };
 }
 
-export function mapStoreToSummary(store: Store): StoreSummary {
+export function mapStoreToSummary(store: Store): StoreSummaryDto {
   return {
     ...mapStoreToPreview(store),
     tags: [],
-    address: null,
+    address: null, // TODO: should be developed more
     description: store.description ?? undefined,
   };
 }
 
-export function mapStoreToDetail(store: Store): StoreDetail {
+export function mapStoreToDetail(store: Store): StoreDetailDto {
   return {
     ...mapStoreToSummary(store),
     owner: mapUserToSummary(store.owner),

@@ -19,16 +19,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import {
-  CreateStoreBasicDto,
-  CreateStoreCategoryDto,
-  CreateStoreLocationDto,
-  CreateStoreWorkingHoursDto,
-} from './dto/create-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
-import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '../users/user.entity';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
+import { User } from '@/users/user.entity';
 import { StoreOwnerGuard } from './store-owner.guard';
+import {
+  CreateAddressDto,
+  CreateStoreBasicDto,
+  CreateStoreTagsDto,
+  CreateStoreWorkingHoursDto,
+} from '@/stores/dto';
 
 @ApiTags('stores')
 @ApiBearerAuth()
@@ -59,7 +58,7 @@ export class StoresController {
   async updateStoreLocation(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CreateStoreLocationDto,
+    @Body() dto: CreateAddressDto,
   ) {
     return await this.storesService.updateStoreLocation(user, id, dto);
   }
@@ -74,7 +73,7 @@ export class StoresController {
   async updateStoreCategory(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CreateStoreCategoryDto,
+    @Body() dto: CreateStoreTagsDto,
   ) {
     return await this.storesService.updateStoreCategory(user, id, dto);
   }
@@ -123,7 +122,7 @@ export class StoresController {
   async updateStore(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateStoreDto,
+    @Body() dto: Update, // TODO: add dto
   ) {
     return await this.storesService.updateStore(user, id, dto);
   }
