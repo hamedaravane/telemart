@@ -10,8 +10,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('telemart API')
-    .setDescription('API documentation for telemart project')
+    .setTitle('telemora API')
+    .setDescription('API documentation for telemora project')
     .setVersion('1.0')
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
