@@ -9,18 +9,20 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
+  ApiBody,
   ApiOperation,
   ApiParam,
-  ApiBody,
   ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { User } from './user.entity';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UpdateLanguageDto } from './dto/update-language.dto';
-import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
-import { TelegramUserService } from '../telegram/telegram-user.service';
+import { TelegramUserService } from '@/telegram/telegram-user.service';
+import {
+  UpdateContactLocationDto,
+  UpdateLanguageDto,
+  UpdateProfileDto,
+} from '@/users/dto';
 
 @ApiTags('Users')
 @Controller('users')
