@@ -12,7 +12,7 @@ import { Order } from '../orders/order.entity';
 import { Review } from '../reviews/review.entity';
 import { Store } from '../stores/store.entity';
 import { Payment } from '../payments/payment.entity';
-import { Address } from '../locations/address.entity';
+import { Address } from '../locations/entities/address.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum UserRole {

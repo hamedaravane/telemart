@@ -1,9 +1,9 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { LocationsService } from './locations.service';
-import { Country } from './country.entity';
-import { State } from './state.entity';
-import { City } from './city.entity';
+import { Country } from './entities/country.entity';
+import { State } from './entities/state.entity';
+import { City } from './entities/city.entity';
 import {
   mapCityToCanonical,
   mapCountryToCanonical,

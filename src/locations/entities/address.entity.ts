@@ -8,11 +8,11 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from '../users/user.entity';
+import { User } from '../../users/user.entity';
 import { Country } from './country.entity';
 import { State } from './state.entity';
 import { City } from './city.entity';
-import { Store } from '../stores/store.entity';
+import { Store } from '../../stores/store.entity';
 
 export enum AddressType {
   USER = 'user',

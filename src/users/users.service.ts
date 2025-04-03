@@ -9,9 +9,9 @@ import { User, UserRole } from './user.entity';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateLanguageDto } from './dto/update-language.dto';
 import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
-import { Country } from '../locations/country.entity';
-import { State } from '../locations/state.entity';
-import { City } from '../locations/city.entity';
+import { Country } from '../locations/entities/country.entity';
+import { State } from '../locations/entities/state.entity';
+import { City } from '../locations/entities/city.entity';
 import { WebAppUser } from '../telegram/types';
 
 @Injectable()

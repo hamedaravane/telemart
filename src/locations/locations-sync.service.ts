@@ -5,9 +5,9 @@ import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Country } from './country.entity';
-import { State } from './state.entity';
-import { City } from './city.entity';
+import { Country } from './entities/country.entity';
+import { State } from './entities/state.entity';
+import { City } from './entities/city.entity';
 import {
   GeoNameCountryResponse,
   GeoNameChildrenResponse,
