@@ -6,6 +6,7 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { UserRole } from '../user.entity';
@@ -13,122 +14,164 @@ import { AddressDto } from '@/locations/dto';
 import { StorePreviewDto } from '@/stores/dto';
 import { OrderSummaryDto } from '@/orders/dto';
 
-export class UserPublicPreviewDto {
+export class MediaDto {
   @ApiProperty()
   @IsString()
-  id: number | string;
+  url: string;
 
   @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  alt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  width?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+}
+
+/**
+ * Lightweight public-facing preview of a user.
+ * Shown in listings, reviews, or product displays.
+ */
+export class UserPublicPreviewDto {
+  @ApiProperty({ description: 'Internal user ID or Telegram ID' })
+  @IsString() // used as string to support both number & string ids
+  id: number | string;
+
+  @ApiPropertyOptional({ description: 'Telegram username (e.g. @handle)' })
   @IsOptional()
   @IsString()
   username?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Optional public handle/alias' })
   @IsOptional()
   @IsString()
   handle?: string;
 
-  @ApiPropertyOptional({
-    example: {
-      url: 'https://example.com/avatar.jpg',
-      alt: 'Profile Photo',
-    },
-  })
+  @ApiPropertyOptional({ type: () => MediaDto, description: 'User avatar' })
   @IsOptional()
-  photo?: {
-    url: string;
-    alt?: string;
-    width?: number;
-    height?: number;
-  };
+  @Type(() => MediaDto)
+  photo?: MediaDto;
 }
 
+/**
+ * Extended version of public preview — adds name and role info.
+ */
 export class UserSummaryDto extends UserPublicPreviewDto {
-  @ApiProperty()
+  @ApiProperty({ description: 'First name' })
   @IsString()
   firstName: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ description: 'Last name' })
   @IsOptional()
   @IsString()
   lastName?: string;
 
-  @ApiProperty({ enum: UserRole })
+  @ApiProperty({ enum: UserRole, description: 'User role' })
   @IsEnum(UserRole)
   role: UserRole;
 
-  @ApiProperty({ type: () => AddressDto, isArray: true })
+  @ApiProperty({
+    type: () => AddressDto,
+    isArray: true,
+    description: 'List of associated addresses (optional)',
+  })
+  @ValidateNested({ each: true })
   @Type(() => AddressDto)
   addresses: AddressDto[];
 }
 
+/**
+ * Full private profile returned to the authenticated user.
+ */
 export class UserPrivateProfileDto extends UserSummaryDto {
-  @ApiPropertyOptional()
-  @IsOptional()
+  @ApiProperty({ description: 'Telegram ID (required)', example: '123456789' })
   @IsString()
   telegramId: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: '+1234567890' })
   @IsOptional()
-  @IsString()
+  @IsPhoneNumber(undefined)
   phoneNumber?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'user@example.com' })
   @IsOptional()
-  @IsString()
+  @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    description: 'User’s TON wallet address',
+    example: 'EQB7UXzFdlf...ABC',
+  })
   @IsOptional()
   @IsString()
   walletAddress?: string;
 
-  @ApiPropertyOptional({ type: () => [StorePreviewDto] })
+  @ApiPropertyOptional({ type: () => StorePreviewDto, isArray: true })
   @IsOptional()
+  @ValidateNested({ each: true })
   @Type(() => StorePreviewDto)
   stores?: StorePreviewDto[];
 
-  @ApiPropertyOptional({ type: () => [OrderSummaryDto] })
+  @ApiPropertyOptional({ type: () => OrderSummaryDto, isArray: true })
   @IsOptional()
+  @ValidateNested({ each: true })
   @Type(() => OrderSummaryDto)
   orders?: OrderSummaryDto[];
 }
 
+/**
+ * DTO for updating user’s contact + location information.
+ * Expected during onboarding or checkout.
+ */
 export class UpdateContactLocationDto {
-  @ApiProperty()
+  @ApiProperty({ example: '+1234567890' })
   @IsPhoneNumber(undefined)
   phoneNumber: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 'alice@example.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1 })
   @IsNumber()
   countryId: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 10 })
   @IsNumber()
   stateId: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 100 })
   @IsNumber()
   cityId: number;
 }
 
+/**
+ * Updates preferred language.
+ * Should match Telegram's `language_code` field (e.g. "en", "ru", "fa").
+ */
 export class UpdateLanguageDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'en' })
   @IsString()
   languageCode: string;
 }
 
+/**
+ * Updates editable parts of the user’s profile.
+ */
 export class UpdateProfileDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'Alice' })
   @IsOptional()
   @IsString()
   firstName?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: 'Smith' })
   @IsOptional()
   @IsString()
   lastName?: string;

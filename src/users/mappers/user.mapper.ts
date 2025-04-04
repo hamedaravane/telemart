@@ -5,13 +5,19 @@ import {
   UserSummaryDto,
 } from '@/users/dto';
 import { mapAddressToDto } from '@/locations/mappers/location.mapper';
+import { mapStoreToPreview } from '@/stores/mappers/store.mapper';
+import { mapOrderToSummary } from '@/orders/mappers/order.mapper';
+
+function mapMedia(url?: string): { url: string } | undefined {
+  return url ? { url } : undefined;
+}
 
 export function mapUserToPublicPreview(user: User): UserPublicPreviewDto {
   return {
     id: user.id,
     username: user.username,
-    handle: undefined,
-    photo: user.photoUrl ? { url: user.photoUrl } : undefined,
+    handle: user.username ?? undefined,
+    photo: mapMedia(user.photoUrl),
   };
 }
 
@@ -21,7 +27,7 @@ export function mapUserToSummary(user: User): UserSummaryDto {
     firstName: user.firstName,
     lastName: user.lastName,
     role: user.role,
-    addresses: user.addresses.map(mapAddressToDto),
+    addresses: user.addresses?.map(mapAddressToDto) ?? [],
   };
 }
 
@@ -32,26 +38,7 @@ export function mapUserToPrivateProfile(user: User): UserPrivateProfileDto {
     phoneNumber: user.phoneNumber,
     email: user.email,
     walletAddress: user.walletAddress,
-    stores: user.stores?.map((store) => ({
-      id: store.id,
-      name: store.name,
-      logo: store.logoUrl ? { url: store.logoUrl } : undefined,
-      reputation: store.reputation,
-      isActive: true,
-    })),
-    orders: user.orders?.map((order) => ({
-      id: order.id,
-      status: order.status,
-      totalAmount: order.totalAmount,
-      store: {
-        id: order.store?.id,
-        name: order.store?.name,
-        logo: order.store?.logoUrl ? { url: order.store.logoUrl } : undefined,
-        reputation: order.store?.reputation || 5,
-        isActive: true,
-      },
-      deliveryDate: order.deliveryDate ?? new Date(),
-      createdAt: order.createdAt,
-    })),
+    stores: user.stores?.map(mapStoreToPreview),
+    orders: user.orders?.map(mapOrderToSummary),
   };
 }
