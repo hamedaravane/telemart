@@ -1,16 +1,21 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { firstValueFrom } from 'rxjs';
 import { ConfigService } from '@nestjs/config';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { firstValueFrom } from 'rxjs';
+import {
+  DeepPartial,
+  FindOptionsWhere,
+  ObjectLiteral,
+  Repository,
+} from 'typeorm';
 import { Country } from './entities/country.entity';
 import { State } from './entities/state.entity';
 import { City } from './entities/city.entity';
 import {
-  GeoNameCountryResponse,
   GeoNameChildrenResponse,
+  GeoNameCountryResponse,
 } from './interfaces/geonames.interface';
 
 @Injectable()
@@ -22,127 +27,147 @@ export class LocationsSyncService {
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
     @InjectRepository(Country)
-    private readonly countryRepository: Repository<Country>,
+    private readonly countryRepo: Repository<Country>,
     @InjectRepository(State)
-    private readonly stateRepository: Repository<State>,
+    private readonly stateRepo: Repository<State>,
     @InjectRepository(City)
-    private readonly cityRepository: Repository<City>,
+    private readonly cityRepo: Repository<City>,
   ) {
     const username = this.configService.get<string>('GEONAMES_USERNAME');
     if (!username) {
-      throw new Error('GEONAMES_USERNAME is not set in configuration.');
+      throw new Error('GEONAMES_USERNAME is not configured.');
     }
     this.geonamesUsername = username;
   }
 
-  private async fetchData<T>(url: string): Promise<T> {
-    try {
-      const response = await firstValueFrom(this.httpService.get<T>(url));
-      return response.data;
-    } catch (error) {
-      this.logger.error(`Error fetching data from URL: ${url}`, error);
-      throw error;
-    }
+  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
+  async handleCron(): Promise<void> {
+    this.logger.log('Cron job triggered for location sync');
+    await this.syncLocations();
   }
 
   async syncLocations(): Promise<void> {
-    this.logger.log('Starting location sync process...');
+    this.logger.log('Starting location sync...');
+
     try {
       const countriesUrl = `http://api.geonames.org/countryInfoJSON?username=${this.geonamesUsername}`;
-      const countriesResponse =
+      const countriesData =
         await this.fetchData<GeoNameCountryResponse>(countriesUrl);
-      const countriesData = countriesResponse.geonames;
-      if (!countriesData || !Array.isArray(countriesData)) {
-        this.logger.error('Invalid countries data received');
-        return;
-      }
 
-      for (const c of countriesData) {
-        let country = await this.countryRepository.findOne({
-          where: { code: c.countryCode },
-        });
-        if (!country) {
-          country = this.countryRepository.create({
-            code: c.countryCode,
-            name: c.countryName,
-            nameLocal: { en: c.countryName },
-            capital: c.capital,
-            region: c.continent,
-          });
-          country = await this.countryRepository.save(country);
-          this.logger.log(`Saved country: ${country.name}`);
-        }
+      for (const countryRaw of countriesData.geonames ?? []) {
+        const country = await this.upsert(
+          this.countryRepo,
+          { code: countryRaw.countryCode },
+          () => ({
+            code: countryRaw.countryCode,
+            name: countryRaw.countryName,
+            nameLocal: { en: countryRaw.countryName },
+            capital: countryRaw.capital,
+            region: countryRaw.continent,
+          }),
+        );
 
-        if (!c.geonameId) continue;
+        if (!countryRaw.geonameId) continue;
 
-        const childrenUrl = `http://api.geonames.org/childrenJSON?geonameId=${c.geonameId}&username=${this.geonamesUsername}`;
-        const childrenResponse =
-          await this.fetchData<GeoNameChildrenResponse>(childrenUrl);
-        const childrenData = childrenResponse.geonames || [];
+        const statesUrl = `http://api.geonames.org/childrenJSON?geonameId=${countryRaw.geonameId}&username=${this.geonamesUsername}`;
+        const statesData =
+          await this.fetchData<GeoNameChildrenResponse>(statesUrl);
 
-        for (const child of childrenData) {
-          if (child.fcode !== 'ADM1' && child.fcode !== 'ADM2') continue;
-          let state = await this.stateRepository.findOne({
-            where: {
-              name: child.name,
+        for (const stateRaw of statesData.geonames ?? []) {
+          if (!['ADM1', 'ADM2'].includes(stateRaw.fcode)) continue;
+
+          const state = await this.upsert(
+            this.stateRepo,
+            {
+              name: stateRaw.name,
               country: { id: country.id },
             },
-            relations: ['country'],
-          });
-          if (!state) {
-            state = this.stateRepository.create({
-              name: child.name,
-              code: child.adminCode1,
-              nameLocal: { en: child.name },
+            () => ({
+              name: stateRaw.name,
+              code: stateRaw.adminCode1,
+              nameLocal: { en: stateRaw.name },
               country,
-            });
-            state = await this.stateRepository.save(state);
-            this.logger.log(
-              `Saved state: ${state.name} for country ${country.name}`,
-            );
-          }
+            }),
+          );
 
-          if (!child.geonameId) continue;
+          if (!stateRaw.geonameId) continue;
 
-          const stateChildrenUrl = `http://api.geonames.org/childrenJSON?geonameId=${child.geonameId}&username=${this.geonamesUsername}`;
-          const stateChildrenResponse =
-            await this.fetchData<GeoNameChildrenResponse>(stateChildrenUrl);
-          const stateChildrenData = stateChildrenResponse.geonames || [];
-          for (const cityData of stateChildrenData) {
-            if (!cityData.fcode || !cityData.fcode.startsWith('PPL')) continue;
-            let city = await this.cityRepository.findOne({
-              where: {
-                name: cityData.name,
+          const citiesUrl = `http://api.geonames.org/childrenJSON?geonameId=${stateRaw.geonameId}&username=${this.geonamesUsername}`;
+          const citiesData =
+            await this.fetchData<GeoNameChildrenResponse>(citiesUrl);
+
+          for (const cityRaw of citiesData.geonames ?? []) {
+            if (!cityRaw.name || !cityRaw.fcode?.startsWith('PPL')) continue;
+
+            const lat = Number(cityRaw.lat);
+            const lng = Number(cityRaw.lng);
+            const hasValidGeo = this.isValidLatLng(lat, lng);
+
+            await this.upsert(
+              this.cityRepo,
+              {
+                name: cityRaw.name,
                 state: { id: state.id },
               },
-              relations: ['state'],
-            });
-            if (!city) {
-              city = this.cityRepository.create({
-                name: cityData.name,
-                nameLocal: { en: cityData.name },
-                postalCode: cityData.postalCode,
-                latitude: Number(cityData.lat),
-                longitude: Number(cityData.lng),
+              () => ({
+                name: cityRaw.name,
+                nameLocal: { en: cityRaw.name },
+                postalCode: cityRaw.postalCode,
+                latitude: hasValidGeo ? lat : undefined,
+                longitude: hasValidGeo ? lng : undefined,
                 state,
-              });
-              city = await this.cityRepository.save(city);
-              this.logger.log(
-                `Saved city: ${city.name} in state ${state.name}`,
-              );
-            }
+              }),
+            );
           }
         }
       }
+
       this.logger.log('Location sync completed.');
-    } catch (error) {
-      this.logger.error('Error during location sync', error);
+    } catch (e) {
+      const err = e as Error;
+      this.logger.error(
+        `Error during location sync: ${err.message}`,
+        err.stack,
+      );
     }
   }
 
-  @Cron(CronExpression.EVERY_1ST_DAY_OF_MONTH_AT_MIDNIGHT)
-  async handleCron(): Promise<void> {
-    this.logger.log('Cron job triggered for location sync.');
-    await this.syncLocations();
+  private async fetchData<T>(url: string): Promise<T> {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        const res = await firstValueFrom(this.httpService.get<T>(url));
+        return res.data;
+      } catch (e) {
+        const err = e as Error;
+        this.logger.warn(
+          `Attempt ${attempt} failed for ${url}: ${err.message}`,
+        );
+        await new Promise((res) => setTimeout(res, attempt * 1000));
+      }
+    }
+    throw new Error(`Failed to fetch data from ${url} after 3 attempts`);
+  }
+
+  private async upsert<T extends ObjectLiteral>(
+    repo: Repository<T>,
+    where: FindOptionsWhere<T>,
+    createFn: () => DeepPartial<T>,
+  ): Promise<T> {
+    const existing = await repo.findOne({ where });
+    if (existing) return existing;
+
+    const entity = repo.create(createFn());
+    return await repo.save(entity);
+  }
+
+  private isValidLatLng(lat: unknown, lng: unknown): boolean {
+    return (
+      typeof lat === 'number' &&
+      typeof lng === 'number' &&
+      lat >= -90 &&
+      lat <= 90 &&
+      lng >= -180 &&
+      lng <= 180
+    );
   }
 }

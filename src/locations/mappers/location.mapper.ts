@@ -1,71 +1,85 @@
 import { Country } from '../entities/country.entity';
 import { State } from '../entities/state.entity';
 import { City } from '../entities/city.entity';
-import { AddressDto, CanonicalLocationDto } from '@/locations/dto';
+import {
+  AddressDto,
+  CanonicalLocationDto,
+  CanonicalLocationType,
+} from '@/locations/dto';
 import { Address } from '@/locations/entities/address.entity';
 
-export function mapCountryToCanonical(country: Country): CanonicalLocationDto {
+/**
+ * Maps a Country entity to a CanonicalLocationDto.
+ */
+export function mapCountryToCanonical(
+  country?: Country,
+): CanonicalLocationDto | undefined {
+  if (!country) return undefined;
   return {
     id: country.id,
     name: country.name,
-    type: 'country' as const,
+    type: CanonicalLocationType.COUNTRY,
     parentId: undefined,
     postalCode: undefined,
-    latitude: undefined,
-    longitude: undefined,
+    latitude: country.states?.[0]?.cities?.[0]?.latitude ?? undefined,
+    longitude: country.states?.[0]?.cities?.[0]?.longitude ?? undefined,
   };
 }
 
-export function mapStateToCanonical(state: State): CanonicalLocationDto {
+/**
+ * Maps a State entity to a CanonicalLocationDto.
+ */
+export function mapStateToCanonical(
+  state?: State,
+): CanonicalLocationDto | undefined {
+  if (!state) return undefined;
   return {
     id: state.id,
     name: state.name,
-    type: 'state' as const,
-    parentId: state.country?.id ?? undefined,
+    type: CanonicalLocationType.STATE,
+    parentId: state.country?.id ?? state.countryId ?? undefined,
     postalCode: undefined,
-    latitude: undefined,
-    longitude: undefined,
+    latitude: state.cities?.[0]?.latitude ?? undefined,
+    longitude: state.cities?.[0]?.longitude ?? undefined,
   };
 }
 
-export function mapCityToCanonical(city: City): CanonicalLocationDto {
+/**
+ * Maps a City entity to a CanonicalLocationDto.
+ */
+export function mapCityToCanonical(
+  city?: City,
+): CanonicalLocationDto | undefined {
+  if (!city) return undefined;
   return {
     id: city.id,
     name: city.name,
-    type: 'city' as const,
-    parentId: city.state?.id ?? undefined,
+    type: CanonicalLocationType.CITY,
+    parentId: city.state?.id ?? city.stateId ?? undefined,
     postalCode: city.postalCode ?? undefined,
     latitude: city.latitude ?? undefined,
     longitude: city.longitude ?? undefined,
   };
 }
 
+/**
+ * Maps a full Address entity to AddressDto.
+ */
 export function mapAddressToDto(address: Address): AddressDto {
   return {
     id: address.id,
-    label: address.label,
-    country: address.country
-      ? mapCountryToCanonical(address.country)
-      : undefined,
-    state: address.state ? mapStateToCanonical(address.state) : undefined,
-    city: address.city ? mapCityToCanonical(address.city) : undefined,
-    fullText: [
-      address.streetLine1,
-      address.streetLine2,
-      address.city?.name,
-      address.state?.name,
-      address.country?.name,
-      address.postalCode,
-    ]
-      .filter(Boolean)
-      .join(', '),
+    label: address.label ?? undefined,
+    country: mapCountryToCanonical(address.country),
+    state: mapStateToCanonical(address.state),
+    city: mapCityToCanonical(address.city),
     streetLine1: address.streetLine1,
-    streetLine2: address.streetLine2,
-    postalCode: address.postalCode,
-    latitude: Number(address.latitude),
-    longitude: Number(address.longitude),
+    streetLine2: address.streetLine2 ?? undefined,
+    postalCode: address.postalCode ?? undefined,
+    geoPoint: {
+      latitude: Number(address.latitude),
+      longitude: Number(address.longitude),
+    },
     type: address.type,
     isDefault: address.isDefault,
-    createdAt: address.createdAt,
   };
 }

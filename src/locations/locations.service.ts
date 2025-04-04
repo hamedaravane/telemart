@@ -1,18 +1,38 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Country } from './entities/country.entity';
 import { State } from './entities/state.entity';
 import { City } from './entities/city.entity';
-import { ApiTags } from '@nestjs/swagger';
 import {
   mapCityToCanonical,
   mapCountryToCanonical,
   mapStateToCanonical,
 } from './mappers/location.mapper';
-import { NearestLocationResponse } from './mappers/types';
+import { NearestLocationResponseDto } from '@/locations/dto';
 
-@ApiTags('Locations Service')
+/**
+ * Utility to compute the distance between two geo-points using the Haversine formula.
+ */
+function getDistanceKm(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const toRad = (val: number) => (val * Math.PI) / 180;
+  const R = 6371;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 @Injectable()
 export class LocationsService {
   constructor(
@@ -40,9 +60,7 @@ export class LocationsService {
   }
 
   async getStatesByCountry(countryId: number): Promise<State[]> {
-    const country = await this.countryRepository.findOne({
-      where: { id: countryId },
-    });
+    const country = await this.countryRepository.findOneBy({ id: countryId });
     if (!country) {
       throw new NotFoundException(`Country with ID ${countryId} not found`);
     }
@@ -65,9 +83,7 @@ export class LocationsService {
   }
 
   async getCitiesByState(stateId: number): Promise<City[]> {
-    const state = await this.stateRepository.findOne({
-      where: { id: stateId },
-    });
+    const state = await this.stateRepository.findOneBy({ id: stateId });
     if (!state) {
       throw new NotFoundException(`State with ID ${stateId} not found`);
     }
@@ -89,32 +105,53 @@ export class LocationsService {
     return city;
   }
 
+  /**
+   * Returns the nearest city (and its parent state and country)
+   * based on the user’s geo coordinates.
+   */
   async getNearestLocation(
     lat: number,
     lng: number,
-  ): Promise<NearestLocationResponse> {
+  ): Promise<NearestLocationResponseDto> {
     const cities = await this.cityRepository.find({
+      where: {
+        latitude: Not(IsNull()),
+        longitude: Not(IsNull()),
+      },
       relations: ['state', 'state.country'],
     });
 
-    let closestCity = cities[0];
-    let closestDistance = Number.MAX_VALUE;
+    if (!cities.length) {
+      throw new NotFoundException(
+        'No cities with coordinates found in database',
+      );
+    }
+
+    let nearestCity: City | undefined;
+    let minDistance = Infinity;
 
     for (const city of cities) {
-      if (city.latitude == null || city.longitude == null) continue;
-      const dLat = city.latitude - lat;
-      const dLng = city.longitude - lng;
-      const distance = dLat * dLat + dLng * dLng;
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestCity = city;
+      const distance = getDistanceKm(lat, lng, city.latitude!, city.longitude!);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestCity = city;
       }
     }
 
+    if (!nearestCity || !nearestCity.state || !nearestCity.state.country) {
+      throw new NotFoundException('Unable to determine nearest location');
+    }
+
+    const canonicalCountry = mapCountryToCanonical(nearestCity.state.country);
+
+    if (!canonicalCountry) {
+      throw new NotFoundException('Unable to determine nearest location');
+    }
+
     return {
-      city: mapCityToCanonical(closestCity),
-      state: mapStateToCanonical(closestCity.state),
-      country: mapCountryToCanonical(closestCity.state.country),
+      city: mapCityToCanonical(nearestCity),
+      state: mapStateToCanonical(nearestCity.state),
+      country: canonicalCountry,
     };
   }
 }

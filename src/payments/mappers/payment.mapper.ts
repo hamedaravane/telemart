@@ -20,7 +20,7 @@ export function mapPaymentToDetail(payment: Payment): PaymentDetailDto {
     commission: payment.commission ?? undefined,
     fromWalletAddress: payment.fromWalletAddress ?? undefined,
     toWalletAddress: payment.toWalletAddress ?? undefined,
-    order: mapOrderToSummary(payment.order), // TODO: it has a problem
+    order: mapOrderToSummary(payment.order),
     user: mapUserToSummary(payment.user),
   };
 }

@@ -122,7 +122,7 @@ export class StoresController {
   async updateStore(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: Update, // TODO: add dto
+    @Body() dto: Update,
   ) {
     return await this.storesService.updateStore(user, id, dto);
   }

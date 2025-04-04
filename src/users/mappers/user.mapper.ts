@@ -50,7 +50,7 @@ export function mapUserToPrivateProfile(user: User): UserPrivateProfileDto {
         reputation: order.store?.reputation || 5,
         isActive: true,
       },
-      deliveryDate: order.deliveryDate ?? new Date(), // TODO: should be changes later
+      deliveryDate: order.deliveryDate ?? new Date(),
       createdAt: order.createdAt,
     })),
   };

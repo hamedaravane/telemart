@@ -66,7 +66,6 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  // TODO: we should consider that users wants to update which their location
   async updateContactLocation(
     id: number,
     dto: UpdateContactLocationDto,
