@@ -6,6 +6,7 @@ import {
   Index,
   OneToMany,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -22,36 +23,42 @@ export enum UserRole {
 }
 
 @Entity('users')
+@Unique(['telegramId'])
+@Unique(['phoneNumber'])
+@Unique(['email'])
 export class User {
-  @ApiProperty({ example: 1, description: 'User ID' })
+  @ApiProperty({ example: 1, description: 'Auto-incremented internal ID' })
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ApiProperty({ example: '123456789', description: 'Telegram ID' })
-  @Column({ unique: true })
+  @ApiProperty({
+    example: '123456789',
+    description: 'Telegram ID (unique identifier from Telegram)',
+  })
   @Index()
+  @Column({ unique: true })
   telegramId: string;
 
-  @ApiProperty({ example: 'Alice', description: 'First name' })
-  @Column()
+  @ApiProperty({ example: 'Alice' })
+  @Column({ length: 50 })
   firstName: string;
 
-  @ApiPropertyOptional({ example: 'Doe', description: 'Last name' })
-  @Column({ nullable: true })
+  @ApiPropertyOptional({ example: 'Doe' })
+  @Column({ nullable: true, length: 50 })
   lastName?: string;
 
   @ApiPropertyOptional({
     example: 'alice_handle',
-    description: 'Telegram username',
+    description: 'Telegram username (optional)',
   })
   @Column({ nullable: true })
   username?: string;
 
-  @ApiPropertyOptional({ example: 'en', description: 'Preferred language' })
-  @Column({ nullable: true })
+  @ApiPropertyOptional({ example: 'en' })
+  @Column({ nullable: true, length: 5 })
   languageCode?: string;
 
-  @ApiPropertyOptional({ example: true, description: 'Has Telegram Premium' })
+  @ApiPropertyOptional({ example: true })
   @Column({ nullable: true })
   hasTelegramPremium?: boolean;
 
@@ -67,18 +74,23 @@ export class User {
   @Column({ unique: true, nullable: true })
   email?: string;
 
-  @ApiProperty({ enum: UserRole, default: UserRole.BUYER })
+  @ApiProperty({
+    enum: UserRole,
+    default: UserRole.BUYER,
+    description: 'User role: buyer, seller, or both',
+  })
   @Column({ type: 'enum', enum: UserRole, default: UserRole.BUYER })
   role: UserRole;
 
   @ApiPropertyOptional({
-    example: '0xABC123...',
-    description: 'User wallet address',
+    example: 'EQC2h4KQczx7df0xv5M7...',
+    description: 'TON wallet address (optional)',
   })
-  @Column({ nullable: true })
+  @Index()
+  @Column({ nullable: true, length: 100 })
   walletAddress?: string;
 
-  @ApiProperty({ type: () => Address, isArray: true })
+  @ApiPropertyOptional({ type: () => [Address] })
   @OneToMany(() => Address, (address) => address.user)
   addresses: Address[];
 
@@ -98,9 +110,9 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiPropertyOptional()
+  @ApiProperty()
   @UpdateDateColumn()
-  updatedAt?: Date;
+  updatedAt: Date;
 
   @ApiPropertyOptional()
   @DeleteDateColumn()
