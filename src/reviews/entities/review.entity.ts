@@ -7,8 +7,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
-import { Product } from '../products/product.entity';
+import { User } from '../../users/user.entity';
+import { Product } from '../../products/entities/product.entity';
 import { ReviewReply } from './review-reply.entity';
 import { ReviewReport } from './review-report.entity';
 import { ApiProperty } from '@nestjs/swagger';

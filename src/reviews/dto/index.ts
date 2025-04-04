@@ -9,7 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ReportReason } from '@/reviews/review-report.entity';
+import { ReportReason } from '@/reviews/entities/review-report.entity';
 import { UserPublicPreviewDto } from '@/users/dto';
 
 export class CreateReviewDto {

@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Order, OrderStatus } from './order.entity';
+import { Order, OrderStatus } from './entities/order.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { OrderItem } from './order-item.entity';
+import { OrderItem } from './entities/order-item.entity';
 import { ProductsService } from '../products/products.service';
 import { Store } from '../stores/store.entity';
 

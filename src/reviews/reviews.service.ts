@@ -1,12 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Review } from './review.entity';
+import { Review } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { CreateReviewReplyDto } from './dto/create-review-reply.dto';
 import { CreateReviewReportDto } from './dto/create-review-report.dto';
-import { ReviewReply } from './review-reply.entity';
-import { ReviewReport } from './review-report.entity';
+import { ReviewReply } from './entities/review-reply.entity';
+import { ReviewReport } from './entities/review-report.entity';
 
 @Injectable()
 export class ReviewsService {

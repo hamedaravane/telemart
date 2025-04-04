@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Order } from '../orders/order.entity';
+import { Order } from '../orders/entities/order.entity';
 import { User } from '../users/user.entity';
 
 export enum PaymentStatus {

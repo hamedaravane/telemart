@@ -13,8 +13,8 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '@/users/user.entity';
-import { Product } from '@/products/product.entity';
-import { Order } from '@/orders/order.entity';
+import { Product } from '@/products/entities/product.entity';
+import { Order } from '@/orders/entities/order.entity';
 import { Address } from '@/locations/entities/address.entity';
 
 @Entity('stores')

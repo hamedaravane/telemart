@@ -1,4 +1,7 @@
-import { ProductPreview, ProductType } from '../products/product.entity';
+import {
+  ProductPreview,
+  ProductType,
+} from '../products/entities/product.entity';
 import { StorePreview } from '../stores/store.entity';
 import { ApiProperty } from '@nestjs/swagger';
 

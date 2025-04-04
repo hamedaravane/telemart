@@ -8,9 +8,9 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ReviewsService } from './reviews.service';
-import { Review } from './review.entity';
+import { Review } from './entities/review.entity';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { CreateReviewReplyDto } from './dto/create-review-reply.dto';
 import { CreateReviewReportDto } from './dto/create-review-report.dto';

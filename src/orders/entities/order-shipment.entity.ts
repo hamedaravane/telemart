@@ -2,8 +2,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  OneToOne,
   JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Order } from './order.entity';

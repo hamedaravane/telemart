@@ -1,4 +1,4 @@
-import { Order } from '@/orders/order.entity';
+import { Order } from '@/orders/entities/order.entity';
 import { mapStoreToPreview } from '@/stores/mappers/store.mapper';
 import { mapProductToPreview } from '@/products/mappers/product.mapper';
 import { mapPaymentToSummary } from '@/payments/mappers/payment.mapper';

@@ -6,13 +6,15 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
-import { UpdateProfileDto } from './dto/update-profile.dto';
-import { UpdateLanguageDto } from './dto/update-language.dto';
-import { UpdateContactLocationDto } from './dto/update-contact-location.dto';
-import { Country } from '../locations/entities/country.entity';
-import { State } from '../locations/entities/state.entity';
-import { City } from '../locations/entities/city.entity';
-import { WebAppUser } from '../telegram/types';
+import { Country } from '@/locations/entities/country.entity';
+import {
+  UpdateContactLocationDto,
+  UpdateLanguageDto,
+  UpdateProfileDto,
+} from '@/users/dto';
+import { State } from '@/locations/entities/state.entity';
+import { City } from '@/locations/entities/city.entity';
+import { WebAppUser } from '@/telegram/types';
 
 @Injectable()
 export class UsersService {
@@ -64,6 +66,7 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
+  // TODO: we should consider that users wants to update which their location
   async updateContactLocation(
     id: number,
     dto: UpdateContactLocationDto,

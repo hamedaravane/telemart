@@ -7,7 +7,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ProductType } from '@/products/product.entity';
+import { ProductType } from '@/products/entities/product.entity';
 import { StorePreviewDto } from '@/stores/dto';
 import { ReviewPreviewDto } from '@/reviews/dto';
 

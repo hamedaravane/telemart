@@ -6,7 +6,7 @@ import {
   mapProductPreview,
   Product,
   ProductType,
-} from '../products/product.entity';
+} from '../products/entities/product.entity';
 import { MarketPageResponse } from './market.entity';
 
 @Injectable()

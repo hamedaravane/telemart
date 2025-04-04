@@ -2,16 +2,16 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
-  Index,
 } from 'typeorm';
-import { Store } from '../stores/store.entity';
+import { Store } from '../../stores/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
-import { Review } from '../reviews/review.entity';
+import { Review } from '../../reviews/entities/review.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export enum ProductType {

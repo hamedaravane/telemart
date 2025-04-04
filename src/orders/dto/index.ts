@@ -9,7 +9,7 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProductPreviewDto } from '@/products/dto';
-import { OrderStatus } from '@/orders/order.entity';
+import { OrderStatus } from '@/orders/entities/order.entity';
 import { StorePreviewDto } from '@/stores/dto';
 import { PaymentSummaryDto } from '@/payments/dto';
 import { UserSummaryDto } from '@/users/dto';

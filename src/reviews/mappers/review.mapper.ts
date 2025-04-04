@@ -1,6 +1,6 @@
-import { Review } from '../review.entity';
-import { ReviewReply } from '../review-reply.entity';
-import { ReviewReport } from '../review-report.entity';
+import { Review } from '../entities/review.entity';
+import { ReviewReply } from '../entities/review-reply.entity';
+import { ReviewReport } from '../entities/review-report.entity';
 import {
   ReviewDetailDto,
   ReviewPreviewDto,

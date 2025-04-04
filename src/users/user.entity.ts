@@ -10,8 +10,8 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Address } from '@/locations/entities/address.entity';
-import { Order } from '@/orders/order.entity';
-import { Review } from '@/reviews/review.entity';
+import { Order } from '@/orders/entities/order.entity';
+import { Review } from '@/reviews/entities/review.entity';
 import { Store } from '@/stores/store.entity';
 import { Payment } from '@/payments/payment.entity';
 
@@ -98,9 +98,9 @@ export class User {
   @CreateDateColumn()
   createdAt: Date;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt?: Date;
 
   @ApiPropertyOptional()
   @DeleteDateColumn()
