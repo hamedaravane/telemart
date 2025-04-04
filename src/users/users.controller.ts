@@ -39,15 +39,7 @@ export class UsersController {
   async telegramAuth(@Body() initData: string): Promise<UserPrivateProfileDto> {
     const tgUser = this.usersService.validateAndParse(initData);
 
-    const user = await this.usersService.findOrCreate({
-      telegramId: String(tgUser.id),
-      firstName: tgUser.firstName,
-      lastName: tgUser.lastName,
-      username: tgUser.username,
-      photoUrl: tgUser.photoUrl,
-      languageCode: tgUser.languageCode,
-      hasTelegramPremium: tgUser.isPremium,
-    });
+    const user = await this.usersService.findOrCreate(tgUser);
 
     return mapUserToPrivateProfile(user);
   }
@@ -83,7 +75,8 @@ export class UsersController {
     @Param('telegramId') telegramId: string,
     @Body() dto: UpdateProfileDto,
   ): Promise<UserPrivateProfileDto> {
-    return this.usersService.updateProfile(telegramId, dto);
+    const user = await this.usersService.updateProfile(telegramId, dto);
+    return mapUserToPrivateProfile(user);
   }
 
   @Patch(':telegramId/language')
@@ -95,13 +88,12 @@ export class UsersController {
     @Param('telegramId') telegramId: string,
     @Body() dto: UpdateLanguageDto,
   ): Promise<UserPrivateProfileDto> {
-    return this.usersService.updateLanguage(telegramId, dto);
+    const user = await this.usersService.updateLanguage(telegramId, dto);
+    return mapUserToPrivateProfile(user);
   }
 
   @Patch(':telegramId/contact-location')
-  @ApiOperation({
-    summary: 'Update contact + location info (e.g. phone, email)',
-  })
+  @ApiOperation({ summary: 'Update user contact info and an address location' })
   @ApiParam({ name: 'telegramId', example: '123456789' })
   @ApiBody({ type: UpdateContactLocationDto })
   @ApiResponse({ status: 200, type: UserPrivateProfileDto })
@@ -109,7 +101,8 @@ export class UsersController {
     @Param('telegramId') telegramId: string,
     @Body() dto: UpdateContactLocationDto,
   ): Promise<UserPrivateProfileDto> {
-    return this.usersService.updateContactLocation(telegramId, dto);
+    const user = await this.usersService.updateContactLocation(telegramId, dto);
+    return mapUserToPrivateProfile(user);
   }
 
   @Patch(':telegramId/upgrade')
@@ -119,6 +112,7 @@ export class UsersController {
   async upgradeToSeller(
     @Param('telegramId') telegramId: string,
   ): Promise<UserPrivateProfileDto> {
-    return this.usersService.upgradeToSeller(telegramId);
+    const user = await this.usersService.upgradeToSeller(telegramId);
+    return mapUserToPrivateProfile(user);
   }
 }

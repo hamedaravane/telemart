@@ -139,6 +139,10 @@ export class UpdateContactLocationDto {
   @IsEmail()
   email: string;
 
+  @ApiProperty({ description: 'Address ID to update' })
+  @IsNumber()
+  addressId: number;
+
   @ApiProperty({ example: 1 })
   @IsNumber()
   countryId: number;
