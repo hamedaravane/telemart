@@ -41,7 +41,7 @@ export class MediaDto {
  */
 export class UserPublicPreviewDto {
   @ApiProperty({ description: 'Internal user ID or Telegram ID' })
-  @IsString() // used as string to support both number & string ids
+  @IsString()
   id: number | string;
 
   @ApiPropertyOptional({ description: 'Telegram username (e.g. @handle)' })

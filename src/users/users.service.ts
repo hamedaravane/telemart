@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -15,6 +16,14 @@ import {
 import { State } from '@/locations/entities/state.entity';
 import { City } from '@/locations/entities/city.entity';
 import { WebAppUser } from '@/telegram/types';
+import {
+  AuthDateInvalidError,
+  ExpiredError,
+  isSignatureInvalidError,
+  parse,
+  validate,
+} from '@telegram-apps/init-data-node';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -23,7 +32,39 @@ export class UsersService {
     private usersRepository: Repository<User>,
     @InjectRepository(Country)
     private countryRepository: Repository<Country>,
+    private readonly configService: ConfigService,
   ) {}
+
+  validateAndParse(initDataRaw: string) {
+    const botToken = this.configService.get<string>('TELEGRAM_BOT_TOKEN');
+    if (!botToken) {
+      throw new Error('TELEGRAM_BOT_TOKEN is not defined');
+    }
+
+    try {
+      validate(initDataRaw, botToken);
+
+      const data = parse(initDataRaw, true);
+
+      if (!data.user?.id || !data.user.firstName) {
+        throw new UnauthorizedException('Missing Telegram user info');
+      }
+
+      return data.user;
+    } catch (error) {
+      if (isSignatureInvalidError(error)) {
+        throw new UnauthorizedException('Telegram signature invalid');
+      }
+      if (error instanceof AuthDateInvalidError) {
+        throw new UnauthorizedException('Telegram auth_date is invalid');
+      }
+      if (error instanceof ExpiredError) {
+        throw new UnauthorizedException('Telegram auth has expired');
+      }
+
+      throw new UnauthorizedException('Telegram init data is invalid');
+    }
+  }
 
   async findByTelegramId(telegramId: string): Promise<User> {
     const user = await this.usersRepository.findOne({
