@@ -13,27 +13,7 @@ import { UserRole } from '../user.entity';
 import { AddressDto } from '@/locations/dto';
 import { StorePreviewDto } from '@/stores/dto';
 import { OrderSummaryDto } from '@/orders/dto';
-
-export class MediaDto {
-  @ApiProperty()
-  @IsString()
-  url: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  alt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  width?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  height?: number;
-}
+import { MediaDto } from '@/common/dto/media.dto';
 
 /**
  * Lightweight public-facing preview of a user.

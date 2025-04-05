@@ -21,27 +21,7 @@ import { UserSummaryDto } from '@/users/dto';
 import { ProductPreviewDto } from '@/products/dto';
 import { SocialMediaPlatform } from '@/stores/entities/social-media-link.entity';
 import { Weekday } from '@/stores/entities/working-hour.entity';
-
-export class MediaDto {
-  @ApiProperty({ example: 'https://cdn.example.com/logo.png' })
-  @IsString()
-  url: string;
-
-  @ApiPropertyOptional({ example: 'Store logo' })
-  @IsOptional()
-  @IsString()
-  alt?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  width?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsNumber()
-  height?: number;
-}
+import { MediaDto } from '@/common/dto/media.dto';
 
 export class SocialLinkDto {
   @ApiProperty({ enum: SocialMediaPlatform })
