@@ -1,123 +1,191 @@
 import {
-  BadRequestException,
+  ForbiddenException,
   Injectable,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product, ProductType } from './entities/product.entity';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { Product } from '@/products/entities/product.entity';
+import { Store } from '@/stores/entities/store.entity';
+import { ProductVariant } from '@/products/entities/product-variant.entity';
+import { ProductImage } from '@/products/entities/product-image.entity';
+import {
+  InventoryEvent,
+  InventoryEventType,
+} from '@/products/entities/inventory-event.entity';
+import {
+  CreateProductDto,
+  CreateProductVariantDto,
+  UpdateProductDto,
+} from '@/products/dto';
+import { User } from '@/users/user.entity';
 
 @Injectable()
 export class ProductsService {
-  private readonly logger = new Logger(ProductsService.name);
-
   constructor(
     @InjectRepository(Product)
-    private productsRepository: Repository<Product>,
+    private readonly productRepo: Repository<Product>,
+    @InjectRepository(Store)
+    private readonly storeRepo: Repository<Store>,
+    @InjectRepository(ProductVariant)
+    private readonly variantRepo: Repository<ProductVariant>,
+    @InjectRepository(InventoryEvent)
+    private readonly inventoryRepo: Repository<InventoryEvent>,
   ) {}
 
-  async getProducts() {
-    return this.productsRepository.find({ cache: true });
+  async getStoreProducts(storeId: number): Promise<Product[]> {
+    return this.productRepo.find({
+      where: { store: { id: storeId } },
+      relations: ['images'],
+    });
   }
 
-  async createProduct(createProductDto: CreateProductDto): Promise<Product> {
-    const {
-      name,
-      price,
-      productType,
-      imageUrl,
-      description,
-      downloadLink,
-      attributes,
-      variants,
-    } = createProductDto;
-    let stock = createProductDto.stock;
-
-    if (
-      productType === ProductType.DIGITAL ||
-      productType === ProductType.SERVICE
-    ) {
-      stock = undefined;
-      if (productType === ProductType.DIGITAL && !downloadLink) {
-        throw new BadRequestException(
-          'Digital products must provide a download link.',
-        );
-      }
-    } else if (productType === ProductType.PHYSICAL) {
-      if (stock === undefined) {
-        stock = 0;
-      }
-    }
-
-    const product = this.productsRepository.create({
-      name,
-      price,
-      productType,
-      imageUrl,
-      description,
-      downloadLink,
-      stock,
-      attributes,
-      variants,
+  async getProductById(storeId: number, productId: number): Promise<Product> {
+    const product = await this.productRepo.findOne({
+      where: { id: productId, store: { id: storeId } },
+      relations: [
+        'store',
+        'images',
+        'attributes',
+        'variants',
+        'variants.attributeValues',
+        'inventoryEvents',
+        'reviews',
+      ],
     });
 
-    this.logger.log(`Creating product "${name}" of type ${productType}`);
-    return this.productsRepository.save(product);
-  }
-
-  async getProductById(id: number): Promise<Product> {
-    const product = await this.productsRepository.findOne({
-      where: { id },
-      relations: ['attributes', 'variants', 'store'],
-    });
-
-    if (!product) {
-      throw new NotFoundException(`Product with ID ${id} not found`);
-    }
-
+    if (!product) throw new NotFoundException('Product not found');
     return product;
   }
 
-  async updateProduct(
-    id: number,
-    updateProductDto: UpdateProductDto,
+  async createProduct(
+    user: User,
+    storeId: number,
+    dto: CreateProductDto,
   ): Promise<Product> {
-    const product = await this.getProductById(id);
+    const store = await this.storeRepo.findOne({
+      where: { id: storeId },
+      relations: ['owner'],
+    });
 
-    if (Object.prototype.hasOwnProperty.call(updateProductDto, 'productType')) {
-      throw new BadRequestException('Changing product type is not allowed.');
-    }
+    if (!store) throw new NotFoundException('Store not found');
+    if (store.owner.id !== user.id)
+      throw new ForbiddenException('You do not own this store');
 
-    if (
-      (product.productType === ProductType.DIGITAL ||
-        product.productType === ProductType.SERVICE) &&
-      updateProductDto.stock !== undefined
-    ) {
-      throw new BadRequestException(
-        'Stock is not applicable for digital or service products.',
+    const product = this.productRepo.create({
+      name: dto.name,
+      price: dto.price,
+      description: dto.description,
+      productType: dto.productType,
+      downloadLink: dto.downloadLink,
+      store,
+    });
+
+    if (dto.attributes?.length) {
+      product.attributes = dto.attributes.map((attr) =>
+        this.attrRepo.create({
+          attributeName: attr.attributeName,
+          attributeValue: attr.attributeValue,
+        }),
       );
     }
 
-    if (
-      product.productType === ProductType.PHYSICAL &&
-      updateProductDto.stock !== undefined
-    ) {
-      if (updateProductDto.stock < 0) {
-        throw new BadRequestException('Stock cannot be negative.');
+    if (dto.variants?.length) {
+      product.variants = dto.variants.map((variant: CreateProductVariantDto) =>
+        this.variantRepo.create({
+          variantName: variant.variantName,
+          variantValue: variant.variantValue,
+          additionalPrice: variant.additionalPrice,
+        }),
+      );
+    }
+
+    const created = await this.productRepo.save(product);
+
+    if (dto.stock !== undefined && dto.stock !== null) {
+      const inventory = this.inventoryRepo.create({
+        product: created,
+        type: InventoryEventType.INITIAL,
+        quantity: dto.stock,
+        note: 'Initial stock',
+      });
+      await this.inventoryRepo.save(inventory);
+    }
+
+    return created;
+  }
+
+  async updateProduct(
+    user: User,
+    storeId: number,
+    productId: number,
+    dto: UpdateProductDto,
+  ): Promise<Product> {
+    const product = await this.getProductById(storeId, productId);
+
+    if (product.store.owner.id !== user.id)
+      throw new ForbiddenException('You do not own this store');
+
+    Object.assign(product, {
+      name: dto.name ?? product.name,
+      price: dto.price ?? product.price,
+      description: dto.description ?? product.description,
+      downloadLink: dto.downloadLink ?? product.downloadLink,
+    });
+
+    if (dto.attributes) {
+      await this.attrRepo.delete({ product: { id: product.id } });
+      product.attributes = dto.attributes.map((attr) =>
+        this.attrRepo.create({
+          attributeName: attr.attributeName,
+          attributeValue: attr.attributeValue,
+          product,
+        }),
+      );
+    }
+
+    if (dto.variants) {
+      await this.variantRepo.delete({ product: { id: product.id } });
+      product.variants = dto.variants.map((variant) =>
+        this.variantRepo.create({
+          variantName: variant.variantName,
+          variantValue: variant.variantValue,
+          additionalPrice: variant.additionalPrice,
+          product,
+        }),
+      );
+    }
+
+    if (dto.stock !== undefined && dto.stock !== null) {
+      const currentStock = await this.calculateStock(product.id);
+      const delta = dto.stock - currentStock;
+      if (delta !== 0) {
+        const event = this.inventoryRepo.create({
+          product,
+          type: InventoryEventType.MANUAL_ADJUSTMENT,
+          quantity: delta,
+          note: 'Manual stock adjustment via update',
+        });
+        await this.inventoryRepo.save(event);
       }
     }
 
-    Object.assign(product, updateProductDto);
-    this.logger.log(`Updating product ID ${id}`);
-    return this.productsRepository.save(product);
+    return await this.productRepo.save(product);
   }
 
-  async getAllProducts(): Promise<Product[]> {
-    return this.productsRepository.find({
-      relations: ['attributes', 'variants', 'store'],
+  async deleteProduct(user: User, storeId: number, productId: number) {
+    const product = await this.getProductById(storeId, productId);
+
+    if (product.store.owner.id !== user.id)
+      throw new ForbiddenException('You do not own this store');
+
+    return this.productRepo.remove(product);
+  }
+
+  async calculateStock(productId: number): Promise<number> {
+    const events = await this.inventoryRepo.find({
+      where: { product: { id: productId } },
     });
+    return events.reduce((sum, e) => sum + e.quantity, 0);
   }
 }
