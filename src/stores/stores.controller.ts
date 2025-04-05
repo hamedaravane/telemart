@@ -8,7 +8,6 @@ import {
   Patch,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import {
@@ -31,7 +30,6 @@ import {
 } from '@/stores/dto';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { StoresService } from './stores.service';
-import { StoreOwnerGuard } from './store-owner.guard';
 import { User } from '@/users/user.entity';
 import { mapStoreToDetail } from '@/stores/mappers/store.mapper';
 import { AddressDto } from '@/locations/dto';
@@ -54,7 +52,6 @@ export class StoresController {
   }
 
   @Patch(':id/address')
-  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store address' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
@@ -68,7 +65,6 @@ export class StoresController {
   }
 
   @Patch(':id/tags')
-  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store tags' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
@@ -81,7 +77,6 @@ export class StoresController {
   }
 
   @Patch(':id/working-hours')
-  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update store working hours' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
@@ -94,7 +89,6 @@ export class StoresController {
   }
 
   @Post(':id/logo')
-  @UseGuards(StoreOwnerGuard)
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Upload store logo' })
@@ -116,7 +110,6 @@ export class StoresController {
   }
 
   @Patch(':id')
-  @UseGuards(StoreOwnerGuard)
   @ApiOperation({ summary: 'Update general store info' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
