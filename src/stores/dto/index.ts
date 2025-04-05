@@ -213,4 +213,34 @@ export class CreateStoreLogoDto {
   logoFile?: any;
 }
 
-export class UpdateStore {}
+export class UpdateStoreDto {
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsPhoneNumber(undefined)
+  contactNumber?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @ApiPropertyOptional({ isArray: true, example: ['tech', 'fitness'] })
+  @IsOptional()
+  tags?: string[];
+
+  @ApiPropertyOptional({ type: () => [StoreWorkingHourDto] })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => StoreWorkingHourDto)
+  workingHours?: StoreWorkingHourDto[];
+}

@@ -12,7 +12,7 @@ import {
   CreateStoreBasicDto,
   CreateStoreTagsDto,
   CreateStoreWorkingHoursDto,
-  UpdateStore,
+  UpdateStoreDto,
 } from './dto';
 import { User } from '@/users/user.entity';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
@@ -111,7 +111,7 @@ export class StoresService {
     return store;
   }
 
-  async updateStoreAddress(
+  async createStoreAddress(
     user: User,
     storeId: number,
     dto: AddressDto,
@@ -130,7 +130,7 @@ export class StoresService {
     return this.findStoreById(storeId);
   }
 
-  async updateStoreTags(
+  async createStoreTags(
     storeId: number,
     dto: CreateStoreTagsDto,
   ): Promise<Store> {
@@ -140,7 +140,7 @@ export class StoresService {
     return this.storeRepo.save(store);
   }
 
-  async updateStoreWorkingHours(
+  async createStoreWorkingHours(
     storeId: number,
     dto: CreateStoreWorkingHoursDto,
   ): Promise<Store> {
@@ -197,7 +197,7 @@ export class StoresService {
     return this.storeRepo.save(store);
   }
 
-  async updateStore(storeId: number, dto: UpdateStore): Promise<Store> {
+  async updateStore(storeId: number, dto: UpdateStoreDto): Promise<Store> {
     const store = await this.findStoreById(storeId);
     Object.assign(store, dto);
     this.logger.log(`Updated general info for store #${storeId}`);

@@ -28,7 +28,7 @@ import {
   CreateStoreWorkingHoursDto,
   StoreDetailDto,
   StoreSummaryDto,
-  UpdateStore,
+  UpdateStoreDto,
 } from '@/stores/dto';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { StoresService } from './stores.service';
@@ -89,7 +89,7 @@ export class StoresController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AddressDto,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStoreAddress(user, id, dto);
+    const store = await this.storesService.createStoreAddress(user, id, dto);
     return mapStoreToDetail(store);
   }
 
@@ -101,7 +101,7 @@ export class StoresController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreTagsDto,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStoreTags(id, dto);
+    const store = await this.storesService.createStoreTags(id, dto);
     return mapStoreToDetail(store);
   }
 
@@ -113,7 +113,7 @@ export class StoresController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreWorkingHoursDto,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStoreWorkingHours(id, dto);
+    const store = await this.storesService.createStoreWorkingHours(id, dto);
     return mapStoreToDetail(store);
   }
 
@@ -144,7 +144,7 @@ export class StoresController {
   @ApiResponse({ status: 200, type: StoreDetailDto })
   async updateStore(
     @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateStore,
+    @Body() dto: UpdateStoreDto,
   ): Promise<StoreDetailDto> {
     const store = await this.storesService.updateStore(id, dto);
     return mapStoreToDetail(store);
