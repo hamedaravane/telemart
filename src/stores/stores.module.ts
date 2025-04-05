@@ -3,13 +3,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StoresService } from './stores.service';
 import { StoresController } from './stores.controller';
 import { Store } from './entities/store.entity';
-import { UsersModule } from '../users/users.module';
-import { StoreOwnerGuard } from './store-owner.guard';
+import { UsersModule } from '@/users/users.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Store]), UsersModule, ConfigModule],
-  providers: [StoresService, StoreOwnerGuard],
+  providers: [StoresService],
   controllers: [StoresController],
   exports: [StoresService],
 })

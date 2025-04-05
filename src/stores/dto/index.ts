@@ -19,7 +19,7 @@ import { Type } from 'class-transformer';
 import { AddressDto } from '@/locations/dto';
 import { UserSummaryDto } from '@/users/dto';
 import { ProductPreviewDto } from '@/products/dto';
-import { SocialPlatform } from '@/stores/entities/social-media-link.entity';
+import { SocialMediaPlatform } from '@/stores/entities/social-media-link.entity';
 import { Weekday } from '@/stores/entities/working-hour.entity';
 
 export class MediaDto {
@@ -44,9 +44,9 @@ export class MediaDto {
 }
 
 export class SocialLinkDto {
-  @ApiProperty({ enum: SocialPlatform })
-  @IsEnum(SocialPlatform)
-  platform: SocialPlatform;
+  @ApiProperty({ enum: SocialMediaPlatform })
+  @IsEnum(SocialMediaPlatform)
+  platform: SocialMediaPlatform;
 
   @ApiProperty({ example: 'https://t.me/yourstore' })
   @IsUrl()

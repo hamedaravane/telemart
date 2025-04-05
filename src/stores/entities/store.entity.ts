@@ -17,7 +17,7 @@ import { User } from '@/users/user.entity';
 import { Product } from '@/products/entities/product.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { Address } from '@/locations/entities/address.entity';
-import { StoreSocialLink } from '@/stores/entities/social-media-link.entity';
+import { SocialMediaLink } from '@/stores/entities/social-media-link.entity';
 import { StoreWorkingHour } from '@/stores/entities/working-hour.entity';
 
 @Entity('stores')
@@ -77,9 +77,9 @@ export class Store {
   @OneToMany(() => Address, (address) => address.store)
   addresses?: Address[];
 
-  @OneToMany(() => StoreSocialLink, (link) => link.store, { cascade: true })
-  @ApiProperty({ type: () => [StoreSocialLink] })
-  socialMediaLinks?: StoreSocialLink[];
+  @OneToMany(() => SocialMediaLink, (link) => link.store, { cascade: true })
+  @ApiProperty({ type: () => [SocialMediaLink] })
+  socialMediaLinks?: SocialMediaLink[];
 
   @ApiProperty({
     example: 4.7,

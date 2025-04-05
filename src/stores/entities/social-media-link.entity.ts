@@ -8,7 +8,7 @@ import {
 import { Store } from './store.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-export enum SocialPlatform {
+export enum SocialMediaPlatform {
   INSTAGRAM = 'instagram',
   FACEBOOK = 'facebook',
   X = 'x',
@@ -21,7 +21,7 @@ export enum SocialPlatform {
 
 @Entity('social_links')
 @Index(['store', 'platform'], { unique: true })
-export class StoreSocialLink {
+export class SocialMediaLink {
   @PrimaryGeneratedColumn()
   @ApiProperty()
   id: number;
@@ -32,9 +32,9 @@ export class StoreSocialLink {
   @ApiProperty({ type: () => Store })
   store: Store;
 
-  @Column({ type: 'enum', enum: SocialPlatform })
-  @ApiProperty({ enum: SocialPlatform })
-  platform: SocialPlatform;
+  @Column({ type: 'enum', enum: SocialMediaPlatform })
+  @ApiProperty({ enum: SocialMediaPlatform })
+  platform: SocialMediaPlatform;
 
   @Column()
   @ApiProperty({ example: 'https://instagram.com/yourstore' })
