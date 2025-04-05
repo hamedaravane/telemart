@@ -49,14 +49,52 @@ export class StoresService {
     });
   }
 
+  async getMyStores(user: User): Promise<Store[]> {
+    return this.storeRepo.find({
+      where: { owner: { id: user.id } },
+      relations: ['owner', 'addresses', 'socialMediaLinks', 'workingHours'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getRecommendedStores(user: User): Promise<Store[]> {
+    const tags =
+      user.addresses?.flatMap((addr) => addr.city?.postalCode?.split('-')) ??
+      [];
+
+    return this.storeRepo
+      .createQueryBuilder('store')
+      .leftJoinAndSelect('store.owner', 'owner')
+      .leftJoinAndSelect('store.addresses', 'addresses')
+      .where('store.isActive = true')
+      .andWhere('store.tags && ARRAY[:...tags]', { tags })
+      .orderBy('store.reputation', 'DESC')
+      .limit(10)
+      .getMany();
+  }
+
+  async getFeaturedStores(): Promise<Store[]> {
+    return this.storeRepo.find({
+      where: { isActive: true, isFeatured: true },
+      relations: ['owner', 'addresses'],
+      order: { reputation: 'DESC' },
+      take: 12,
+    });
+  }
+
   async createStoreBasic(user: User, dto: CreateStoreBasicDto): Promise<Store> {
+    const existing = await this.storeRepo.findOne({
+      where: { owner: { id: user.id } },
+    });
+    if (existing) {
+      throw new BadRequestException('You can only create one store for now.');
+    }
+
     const store = this.storeRepo.create({
       ...dto,
       owner: user,
-      reputation: 5.0,
     });
 
-    this.logger.log(`Creating store "${dto.name}" for user #${user.id}`);
     return this.storeRepo.save(store);
   }
 

@@ -101,6 +101,13 @@ export class Store {
   @Column({ type: 'simple-array', nullable: true })
   tags?: string[];
 
+  @Column({ default: false })
+  @ApiProperty({
+    example: true,
+    description: 'Is this store featured on marketplace?',
+  })
+  isFeatured: boolean;
+
   @ApiProperty({ example: true, description: 'Is the store currently active?' })
   @Column({ default: true })
   isActive: boolean;

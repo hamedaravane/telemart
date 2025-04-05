@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   ParseFilePipeBuilder,
@@ -26,12 +27,16 @@ import {
   CreateStoreTagsDto,
   CreateStoreWorkingHoursDto,
   StoreDetailDto,
+  StoreSummaryDto,
   UpdateStore,
 } from '@/stores/dto';
 import { CurrentUser } from '@/common/decorators/current-user.decorator';
 import { StoresService } from './stores.service';
 import { User } from '@/users/user.entity';
-import { mapStoreToDetail } from '@/stores/mappers/store.mapper';
+import {
+  mapStoreToDetail,
+  mapStoreToSummary,
+} from '@/stores/mappers/store.mapper';
 import { AddressDto } from '@/locations/dto';
 
 @ApiTags('Stores')
@@ -39,6 +44,30 @@ import { AddressDto } from '@/locations/dto';
 @Controller('stores')
 export class StoresController {
   constructor(private readonly storesService: StoresService) {}
+
+  @Get('my')
+  @ApiOperation({ summary: "Get current user's own store(s)" })
+  @ApiResponse({ status: 200, type: StoreSummaryDto, isArray: true })
+  async getMyStores(@CurrentUser() user: User): Promise<StoreSummaryDto[]> {
+    const stores = await this.storesService.getMyStores(user);
+    return stores.map(mapStoreToSummary);
+  }
+
+  @Get('discover')
+  @ApiOperation({ summary: 'Get stores based on user interest or algorithm' })
+  @ApiResponse({ status: 200, type: StoreSummaryDto, isArray: true })
+  async discoverStores(@CurrentUser() user: User): Promise<StoreSummaryDto[]> {
+    const stores = await this.storesService.getRecommendedStores(user);
+    return stores.map(mapStoreToSummary);
+  }
+
+  @Get('featured')
+  @ApiOperation({ summary: 'Get featured stores' })
+  @ApiResponse({ status: 200, type: StoreSummaryDto, isArray: true })
+  async getFeaturedStores(): Promise<StoreSummaryDto[]> {
+    const stores = await this.storesService.getFeaturedStores();
+    return stores.map(mapStoreToSummary);
+  }
 
   @Post('basic')
   @ApiOperation({ summary: 'Create basic store information' })
