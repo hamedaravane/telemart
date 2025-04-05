@@ -84,7 +84,7 @@ export class StoresController {
   @ApiOperation({ summary: 'Update store address' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
-  async updateStoreAddress(
+  async createStoreAddress(
     @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: AddressDto,
@@ -97,7 +97,7 @@ export class StoresController {
   @ApiOperation({ summary: 'Update store tags' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
-  async updateStoreTags(
+  async createStoreTags(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreTagsDto,
   ): Promise<StoreDetailDto> {
@@ -109,7 +109,7 @@ export class StoresController {
   @ApiOperation({ summary: 'Update store working hours' })
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
-  async updateStoreWorkingHours(
+  async createStoreWorkingHours(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreWorkingHoursDto,
   ): Promise<StoreDetailDto> {
