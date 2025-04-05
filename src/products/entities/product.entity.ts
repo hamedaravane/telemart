@@ -8,11 +8,13 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Store } from '../../stores/entities/store.entity';
-import { ProductAttribute } from './product-attribute.entity';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Store } from '@/stores/entities/store.entity';
 import { ProductVariant } from './product-variant.entity';
-import { Review } from '../../reviews/entities/review.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { Review } from '@/reviews/entities/review.entity';
+import { ProductImage } from './product-image.entity';
+import { InventoryEvent } from './inventory-event.entity';
+import { AttributeType } from './attribute-type.entity';
 
 export enum ProductType {
   PHYSICAL = 'physical',
@@ -20,78 +22,70 @@ export enum ProductType {
   SERVICE = 'service',
 }
 
-@Entity({ name: 'products' })
+@Entity('products')
 export class Product {
-  @ApiProperty({ example: 1, description: 'Product ID' })
   @PrimaryGeneratedColumn()
+  @ApiProperty()
   id: number;
 
-  @ApiProperty({ example: 'Wireless Headphones' })
   @Column({ length: 150 })
+  @ApiProperty()
   name: string;
 
-  @ApiProperty({ example: 'wireless-headphones', required: false })
   @Column({ nullable: true, unique: true })
   @Index()
+  @ApiPropertyOptional()
   slug?: string;
 
-  @ApiProperty({ example: 199.99 })
   @Column('decimal', { precision: 10, scale: 2 })
+  @ApiProperty()
   price: number;
 
-  @ApiProperty({ required: false })
-  @Column({ nullable: true, type: 'text' })
+  @Column({ type: 'text', nullable: true })
+  @ApiPropertyOptional()
   description?: string;
 
-  @ApiProperty({ example: 'https://example.com/image.jpg' })
-  @Column()
-  imageUrl: string;
+  @OneToMany(() => ProductImage, (img) => img.product, { cascade: true })
+  @ApiProperty({ type: () => [ProductImage] })
+  images: ProductImage[];
 
-  @ApiProperty({ type: () => Store })
   @ManyToOne(() => Store, (store) => store.products, { onDelete: 'CASCADE' })
+  @ApiProperty({ type: () => Store })
   store: Store;
 
+  @Column({ type: 'enum', enum: ProductType, default: ProductType.PHYSICAL })
   @ApiProperty({ enum: ProductType })
-  @Column({
-    type: 'enum',
-    enum: ProductType,
-    default: ProductType.PHYSICAL,
-  })
   productType: ProductType;
 
-  @ApiProperty({ type: () => [ProductAttribute] })
-  @OneToMany(() => ProductAttribute, (attribute) => attribute.product, {
-    cascade: true,
-    eager: true,
-  })
-  attributes: ProductAttribute[];
-
+  @OneToMany(() => ProductVariant, (v) => v.product, { cascade: true })
   @ApiProperty({ type: () => [ProductVariant] })
-  @OneToMany(() => ProductVariant, (variant) => variant.product, {
-    cascade: true,
-    eager: true,
-  })
   variants: ProductVariant[];
 
+  @OneToMany(() => AttributeType, (t) => t.product, { cascade: true })
+  @ApiProperty({ type: () => [AttributeType] })
+  attributeTypes: AttributeType[];
+
+  @OneToMany(() => Review, (r) => r.product)
   @ApiProperty({ type: () => [Review] })
-  @OneToMany(() => Review, (review) => review.product)
   reviews: Review[];
 
-  @ApiProperty({ required: false })
   @Column({ nullable: true })
+  @ApiPropertyOptional()
   downloadLink?: string;
 
-  @ApiProperty({ example: 10, required: false })
-  @Column({ nullable: true })
-  stock?: number;
+  @OneToMany(() => InventoryEvent, (e) => e.product)
+  @ApiProperty({ type: () => [InventoryEvent] })
+  inventoryEvents: InventoryEvent[];
 
-  @ApiProperty({ example: true })
   @Column({ default: false })
+  @ApiProperty()
   isApproved: boolean;
 
   @CreateDateColumn()
+  @ApiProperty()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @ApiProperty()
   updatedAt: Date;
 }

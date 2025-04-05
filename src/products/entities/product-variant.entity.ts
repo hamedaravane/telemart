@@ -1,11 +1,21 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Product } from './product.entity';
+import { AttributeValue } from './attribute-values.entity';
+import { InventoryEvent } from './inventory-event.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Entity({ name: 'product_variants' })
+@Entity('product_variants')
 export class ProductVariant {
-  @ApiProperty({ example: 1 })
   @PrimaryGeneratedColumn()
+  @ApiProperty()
   id: number;
 
   @ManyToOne(() => Product, (product) => product.variants, {
@@ -13,15 +23,24 @@ export class ProductVariant {
   })
   product: Product;
 
-  @ApiProperty({ example: 'Size' })
-  @Column({ length: 50 })
-  variantName: string;
+  @Column({ nullable: true })
+  @ApiProperty({ required: false })
+  sku?: string;
 
-  @ApiProperty({ example: 'M' })
-  @Column({ length: 50 })
-  variantValue: string;
-
-  @ApiProperty({ example: 5.99, nullable: true })
-  @Column({ nullable: true, type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+  @ApiProperty({ required: false })
   additionalPrice?: number;
+
+  @Column({ default: true })
+  @ApiProperty()
+  isActive: boolean;
+
+  @ManyToMany(() => AttributeValue)
+  @JoinTable()
+  @ApiProperty({ type: () => [AttributeValue] })
+  attributeValues: AttributeValue[];
+
+  @OneToMany(() => InventoryEvent, (e) => e.variant)
+  @ApiProperty({ type: () => [InventoryEvent] })
+  inventoryEvents: InventoryEvent[];
 }
