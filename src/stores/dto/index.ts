@@ -3,11 +3,15 @@ import {
   IsDate,
   IsEmail,
   IsEnum,
+  IsInt,
   IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
   IsUrl,
+  Matches,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
@@ -16,6 +20,7 @@ import { AddressDto } from '@/locations/dto';
 import { UserSummaryDto } from '@/users/dto';
 import { ProductPreviewDto } from '@/products/dto';
 import { SocialPlatform } from '@/stores/entities/social-media-link.entity';
+import { Weekday } from '@/stores/entities/working-hour.entity';
 
 export class MediaDto {
   @ApiProperty({ example: 'https://cdn.example.com/logo.png' })
@@ -53,14 +58,30 @@ export class SocialLinkDto {
   label?: string;
 }
 
-export class WorkingHourDto {
+export class StoreWorkingHourDto {
+  @ApiProperty({ enum: Weekday })
+  @IsEnum(Weekday)
+  day: Weekday;
+
   @ApiProperty({ example: '09:00' })
   @IsString()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Invalid time format. Must be HH:mm',
+  })
   open: string;
 
-  @ApiProperty({ example: '18:00' })
+  @ApiProperty({ example: '13:00' })
   @IsString()
+  @Matches(/^([01]\d|2[0-3]):([0-5]\d)$/, {
+    message: 'Invalid time format. Must be HH:mm',
+  })
   close: string;
+
+  @ApiProperty({ example: 1 })
+  @IsInt()
+  @Min(1)
+  @Max(2)
+  interval: number;
 }
 
 export class StorePreviewDto {
@@ -136,11 +157,11 @@ export class StoreDetailDto extends StoreSummaryDto {
   @Type(() => SocialLinkDto)
   socialMediaLinks?: SocialLinkDto[];
 
-  @ApiPropertyOptional({ type: () => WorkingHourDto })
+  @ApiPropertyOptional({ type: () => [StoreWorkingHourDto] })
   @IsOptional()
   @ValidateNested()
-  @Type(() => WorkingHourDto)
-  workingHours?: Record<string, WorkingHourDto>;
+  @Type(() => StoreWorkingHourDto)
+  workingHours?: StoreWorkingHourDto[];
 
   @ApiProperty({ type: [ProductPreviewDto] })
   @ValidateNested({ each: true })
@@ -179,17 +200,11 @@ export class CreateStoreTagsDto {
 }
 
 export class CreateStoreWorkingHoursDto {
-  @ApiPropertyOptional({
-    type: () => WorkingHourDto,
-    example: {
-      monday: { open: '09:00', close: '18:00' },
-      sunday: { open: '11:00', close: '15:00' },
-    },
-  })
+  @ApiPropertyOptional({ type: () => [StoreWorkingHourDto] })
   @IsOptional()
   @ValidateNested()
-  @Type(() => WorkingHourDto)
-  workingHours?: Record<string, WorkingHourDto>;
+  @Type(() => StoreWorkingHourDto)
+  workingHours?: StoreWorkingHourDto[];
 }
 
 export class CreateStoreLogoDto {
@@ -198,6 +213,4 @@ export class CreateStoreLogoDto {
   logoFile?: any;
 }
 
-export class UpdateStore {
-  // You can define patchable fields for admin panel later
-}
+export class UpdateStore {}

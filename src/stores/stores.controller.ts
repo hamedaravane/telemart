@@ -73,11 +73,10 @@ export class StoresController {
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
   async updateStoreTags(
-    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreTagsDto,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStoreTags(user, id, dto);
+    const store = await this.storesService.updateStoreTags(id, dto);
     return mapStoreToDetail(store);
   }
 
@@ -87,15 +86,10 @@ export class StoresController {
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
   async updateStoreWorkingHours(
-    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: CreateStoreWorkingHoursDto,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStoreWorkingHours(
-      user,
-      id,
-      dto,
-    );
+    const store = await this.storesService.updateStoreWorkingHours(id, dto);
     return mapStoreToDetail(store);
   }
 
@@ -108,17 +102,16 @@ export class StoresController {
   @ApiBody({ type: CreateStoreLogoDto })
   @ApiResponse({ status: 200, type: StoreDetailDto })
   async uploadStoreLogo(
-    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({ fileType: /image\/(jpeg|png|gif)/ })
-        .addMaxSizeValidator({ maxSize: 2 * 1024 * 1024 }) // 2MB
+        .addMaxSizeValidator({ maxSize: 2 * 1024 * 1024 })
         .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
     )
     file: Express.Multer.File,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.uploadStoreLogo(user, id, file);
+    const store = await this.storesService.uploadStoreLogo(id, file);
     return mapStoreToDetail(store);
   }
 
@@ -128,11 +121,10 @@ export class StoresController {
   @ApiParam({ name: 'id', type: Number, description: 'Store ID' })
   @ApiResponse({ status: 200, type: StoreDetailDto })
   async updateStore(
-    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateStore,
   ): Promise<StoreDetailDto> {
-    const store = await this.storesService.updateStore(user, id, dto);
+    const store = await this.storesService.updateStore(id, dto);
     return mapStoreToDetail(store);
   }
 }

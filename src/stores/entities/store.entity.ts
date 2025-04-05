@@ -18,17 +18,7 @@ import { Product } from '@/products/entities/product.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { Address } from '@/locations/entities/address.entity';
 import { StoreSocialLink } from '@/stores/entities/social-media-link.entity';
-
-type Weekday =
-  | 'monday'
-  | 'tuesday'
-  | 'wednesday'
-  | 'thursday'
-  | 'friday'
-  | 'saturday'
-  | 'sunday';
-
-type WorkingHours = Record<Weekday, { open: string; close: string }>;
+import { StoreWorkingHour } from '@/stores/entities/working-hour.entity';
 
 @Entity('stores')
 export class Store {
@@ -100,15 +90,9 @@ export class Store {
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 5.0 })
   reputation: number;
 
-  @ApiPropertyOptional({
-    description: 'Weekly working hours by day',
-    example: {
-      monday: { open: '09:00', close: '18:00' },
-      sunday: { open: '11:00', close: '15:00' },
-    },
-  })
-  @Column({ type: 'json', nullable: true })
-  workingHours?: WorkingHours;
+  @OneToMany(() => StoreWorkingHour, (hour) => hour.store, { cascade: true })
+  @ApiProperty({ type: () => [StoreWorkingHour] })
+  workingHours?: StoreWorkingHour[];
 
   @ApiPropertyOptional({
     example: ['tech', 'gaming'],

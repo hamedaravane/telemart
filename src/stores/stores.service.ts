@@ -20,6 +20,7 @@ import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { Address } from '@/locations/entities/address.entity';
 import { AddressDto } from '@/locations/dto';
+import { StoreWorkingHour } from '@/stores/entities/working-hour.entity';
 
 @Injectable()
 export class StoresService {
@@ -33,6 +34,7 @@ export class StoresService {
     private readonly storeRepo: Repository<Store>,
     @InjectRepository(Address)
     private readonly addressRepo: Repository<Address>,
+    private readonly workingHourRepo: Repository<StoreWorkingHour>,
     private readonly config: ConfigService,
   ) {
     this.bucketName = this.config.get<string>('BUCKET_NAME', 'telemart-files');
@@ -87,38 +89,48 @@ export class StoresService {
 
     this.logger.log(`Address added to store #${storeId} by user #${user.id}`);
 
-    return this.findStoreById(storeId); // return updated store
+    return this.findStoreById(storeId);
   }
 
   async updateStoreTags(
-    user: User,
     storeId: number,
     dto: CreateStoreTagsDto,
   ): Promise<Store> {
     const store = await this.findStoreById(storeId);
     store.tags = dto.tags;
-    this.logger.log(`Updated tags for store #${storeId}: ${store.tags}`);
+    this.logger.log(`Updated tags for store #${storeId}`);
     return this.storeRepo.save(store);
   }
 
   async updateStoreWorkingHours(
-    user: User,
     storeId: number,
     dto: CreateStoreWorkingHoursDto,
   ): Promise<Store> {
     const store = await this.findStoreById(storeId);
 
-    if (dto.workingHours) {
-      this.validateWorkingHours(dto.workingHours);
-      store.workingHours = dto.workingHours;
+    await this.workingHourRepo.delete({ store: { id: store.id } });
+
+    const hours = dto.workingHours?.map((item) =>
+      this.workingHourRepo.create({ ...item, store }),
+    );
+
+    if (!hours) throw new BadRequestException('No working hours provided');
+
+    for (const { open, close } of hours) {
+      const [h1, m1] = open.split(':').map(Number);
+      const [h2, m2] = close.split(':').map(Number);
+      if (h1 * 60 + m1 >= h2 * 60 + m2) {
+        throw new BadRequestException(
+          `Opening time must be before closing time`,
+        );
+      }
     }
 
-    this.logger.log(`Updated working hours for store #${storeId}`);
-    return this.storeRepo.save(store);
+    await this.workingHourRepo.save(hours);
+    return this.findStoreById(store.id);
   }
 
   async uploadStoreLogo(
-    user: User,
     storeId: number,
     file: Express.Multer.File,
   ): Promise<Store> {
@@ -147,33 +159,10 @@ export class StoresService {
     return this.storeRepo.save(store);
   }
 
-  async updateStore(
-    user: User,
-    storeId: number,
-    dto: UpdateStore,
-  ): Promise<Store> {
+  async updateStore(storeId: number, dto: UpdateStore): Promise<Store> {
     const store = await this.findStoreById(storeId);
     Object.assign(store, dto);
     this.logger.log(`Updated general info for store #${storeId}`);
     return this.storeRepo.save(store);
-  }
-
-  private validateWorkingHours(
-    hours: Record<string, { open: string; close: string }>,
-  ): void {
-    for (const day of Object.keys(hours)) {
-      const { open, close } = hours[day];
-      const [oh, om] = open.split(':').map(Number);
-      const [ch, cm] = close.split(':').map(Number);
-
-      const openMinutes = oh * 60 + om;
-      const closeMinutes = ch * 60 + cm;
-
-      if (openMinutes >= closeMinutes) {
-        throw new BadRequestException(
-          `Invalid working hours for ${day}: opening time must be before closing time.`,
-        );
-      }
-    }
   }
 }
