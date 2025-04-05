@@ -2,7 +2,7 @@ import {
   ProductPreview,
   ProductType,
 } from '../products/entities/product.entity';
-import { StorePreview } from '../stores/store.entity';
+import { StorePreview } from '../stores/entities/store.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class MarketPageResponse {

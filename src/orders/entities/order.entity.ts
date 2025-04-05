@@ -10,7 +10,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/user.entity';
-import { Store } from '../../stores/store.entity';
+import { Store } from '../../stores/entities/store.entity';
 import { OrderItem } from './order-item.entity';
 import { OrderShipment } from './order-shipment.entity';
 import { Payment } from '../../payments/payment.entity';

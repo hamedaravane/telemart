@@ -1,127 +1,175 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
+  IsDate,
+  IsEmail,
+  IsEnum,
   IsNumber,
-  IsObject,
   IsOptional,
+  IsPhoneNumber,
   IsString,
+  IsUrl,
   ValidateNested,
 } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { AddressDto } from '@/locations/dto';
 import { UserSummaryDto } from '@/users/dto';
 import { ProductPreviewDto } from '@/products/dto';
+import { SocialPlatform } from '@/stores/entities/social-media-link.entity';
 
-class MediaDto {
-  @ApiProperty() @IsString() url: string;
-  @ApiPropertyOptional() @IsOptional() @IsString() alt?: string;
-  @ApiPropertyOptional() @IsOptional() @IsNumber() width?: number;
-  @ApiPropertyOptional() @IsOptional() @IsNumber() height?: number;
+export class MediaDto {
+  @ApiProperty({ example: 'https://cdn.example.com/logo.png' })
+  @IsString()
+  url: string;
+
+  @ApiPropertyOptional({ example: 'Store logo' })
+  @IsOptional()
+  @IsString()
+  alt?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  width?: number;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsNumber()
+  height?: number;
+}
+
+export class SocialLinkDto {
+  @ApiProperty({ enum: SocialPlatform })
+  @IsEnum(SocialPlatform)
+  platform: SocialPlatform;
+
+  @ApiProperty({ example: 'https://t.me/yourstore' })
+  @IsUrl()
+  url: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  label?: string;
+}
+
+export class WorkingHourDto {
+  @ApiProperty({ example: '09:00' })
+  @IsString()
+  open: string;
+
+  @ApiProperty({ example: '18:00' })
+  @IsString()
+  close: string;
 }
 
 export class StorePreviewDto {
-  @ApiProperty() @IsString() id: string | number;
+  @ApiProperty()
+  @IsNumber()
+  id: number;
 
-  @ApiProperty() @IsString() name: string;
+  @ApiProperty()
+  @IsString()
+  name: string;
 
-  @ApiPropertyOptional() @IsOptional() @IsString() slug?: string;
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  slug?: string;
 
-  @ApiPropertyOptional({ type: () => MediaDto })
+  @ApiPropertyOptional({ type: MediaDto })
   @IsOptional()
   @ValidateNested()
   @Type(() => MediaDto)
   logo?: MediaDto;
 
-  @ApiProperty() @IsNumber() reputation: number;
+  @ApiProperty({ example: 4.9, description: 'Reputation score (1–5)' })
+  @IsNumber()
+  reputation: number;
 
-  @ApiProperty() @IsBoolean() isActive: boolean;
+  @ApiProperty({ example: true })
+  @IsBoolean()
+  isActive: boolean;
 }
 
 export class StoreSummaryDto extends StorePreviewDto {
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ example: ['tech', 'fitness'] })
   @IsOptional()
   tags?: string[];
 
-  @ApiProperty()
+  @ApiPropertyOptional({ type: () => [AddressDto] })
   @IsOptional()
-  @ValidateNested()
+  @ValidateNested({ each: true })
   @Type(() => AddressDto)
   addresses?: AddressDto[];
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsString()
   description?: string;
 }
 
-class WorkingHourDto {
-  @ApiProperty() open: string;
-  @ApiProperty() close: string;
-}
-
 export class StoreDetailDto extends StoreSummaryDto {
-  @ApiProperty()
+  @ApiProperty({ type: UserSummaryDto })
   @ValidateNested()
   @Type(() => UserSummaryDto)
   owner: UserSummaryDto;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsPhoneNumber(undefined)
   contactNumber?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
+  @IsEmail()
   email?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({
+    example: {
+      instagram: 'https://instagram.com/store',
+    },
+    type: [SocialLinkDto],
+  })
   @IsOptional()
-  @IsObject()
-  socialMediaLinks?: Record<string, string>;
+  @ValidateNested()
+  @Type(() => SocialLinkDto)
+  socialMediaLinks?: SocialLinkDto[];
 
-  @ApiPropertyOptional({ type: () => WorkingHourDto, isArray: true })
+  @ApiPropertyOptional({ type: () => WorkingHourDto })
   @IsOptional()
+  @ValidateNested()
+  @Type(() => WorkingHourDto)
   workingHours?: Record<string, WorkingHourDto>;
 
-  @ApiProperty({ type: () => [ProductPreviewDto] })
+  @ApiProperty({ type: [ProductPreviewDto] })
   @ValidateNested({ each: true })
   @Type(() => ProductPreviewDto)
   products: ProductPreviewDto[];
 
   @ApiProperty()
+  @IsDate()
   createdAt: Date;
 }
 
 export class CreateStoreBasicDto {
-  @ApiProperty() @IsString() name: string;
+  @ApiProperty()
+  @IsString()
+  name: string;
 
-  @ApiProperty() @IsString() description: string;
+  @ApiProperty()
+  @IsString()
+  description: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsPhoneNumber(undefined)
   contactNumber?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsEmail()
   email?: string;
-}
-
-export class CreateAddressDto {
-  @ApiProperty() @IsNumber() countryId: number;
-
-  @ApiPropertyOptional() @IsOptional() @IsNumber() stateId?: number;
-
-  @ApiPropertyOptional() @IsOptional() @IsNumber() cityId?: number;
-
-  @ApiProperty() @IsString() streetLine1: string;
-
-  @ApiPropertyOptional() @IsOptional() @IsString() streetLine2?: string;
-
-  @ApiPropertyOptional() @IsOptional() @IsString() postalCode?: string;
-
-  @ApiPropertyOptional() @IsOptional() @IsNumber() latitude?: number;
-
-  @ApiPropertyOptional() @IsOptional() @IsNumber() longitude?: number;
 }
 
 export class CreateStoreTagsDto {
@@ -130,17 +178,18 @@ export class CreateStoreTagsDto {
   tags?: string[];
 }
 
-class WorkingHour {
-  @ApiPropertyOptional() open: string;
-  @ApiPropertyOptional() close: string;
-}
-
 export class CreateStoreWorkingHoursDto {
-  @ApiPropertyOptional({ type: () => WorkingHour, isArray: true })
+  @ApiPropertyOptional({
+    type: () => WorkingHourDto,
+    example: {
+      monday: { open: '09:00', close: '18:00' },
+      sunday: { open: '11:00', close: '15:00' },
+    },
+  })
   @IsOptional()
-  @ValidateNested({ each: true })
-  @Type(() => WorkingHour)
-  workingHours?: Record<string, WorkingHour>;
+  @ValidateNested()
+  @Type(() => WorkingHourDto)
+  workingHours?: Record<string, WorkingHourDto>;
 }
 
 export class CreateStoreLogoDto {
@@ -149,4 +198,6 @@ export class CreateStoreLogoDto {
   logoFile?: any;
 }
 
-export class UpdateStore {}
+export class UpdateStore {
+  // You can define patchable fields for admin panel later
+}

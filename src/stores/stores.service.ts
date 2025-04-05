@@ -7,158 +7,171 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Store } from './store.entity';
+import { Store } from './entities/store.entity';
 import {
   CreateStoreBasicDto,
-  CreateStoreCategoryDto,
-  CreateStoreLocationDto,
+  CreateStoreTagsDto,
   CreateStoreWorkingHoursDto,
-} from './dto/create-store.dto';
-import { UpdateStoreDto } from './dto/update-store.dto';
-import { User } from '../users/user.entity';
+  UpdateStore,
+} from './dto';
+import { User } from '@/users/user.entity';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { Address } from '@/locations/entities/address.entity';
+import { AddressDto } from '@/locations/dto';
 
 @Injectable()
 export class StoresService {
-  private s3Client: S3Client;
-  private readonly bucketName: string;
-  private readonly s3ApiEndpoint: string;
   private readonly logger = new Logger(StoresService.name);
+  private readonly s3Client: S3Client;
+  private readonly bucketName: string;
+  private readonly s3Endpoint: string;
 
   constructor(
     @InjectRepository(Store)
-    private readonly storeRepository: Repository<Store>,
-    private configService: ConfigService,
+    private readonly storeRepo: Repository<Store>,
+    @InjectRepository(Address)
+    private readonly addressRepo: Repository<Address>,
+    private readonly config: ConfigService,
   ) {
-    this.bucketName = this.configService.get<string>(
-      'BUCKET_NAME',
-      'telemart-files',
-    );
-    this.s3ApiEndpoint = this.configService.get<string>(
+    this.bucketName = this.config.get<string>('BUCKET_NAME', 'telemart-files');
+    this.s3Endpoint = this.config.get<string>(
       'API_ENDPOINT',
       'storage.c2.liara.space',
     );
+
     this.s3Client = new S3Client({
       region: 'default',
-      endpoint: this.s3ApiEndpoint,
+      endpoint: this.s3Endpoint,
     });
-  }
-
-  async getStores(): Promise<Store[]> {
-    return await this.storeRepository.find({ cache: true });
   }
 
   async createStoreBasic(user: User, dto: CreateStoreBasicDto): Promise<Store> {
-    const store = this.storeRepository.create({
+    const store = this.storeRepo.create({
       ...dto,
       owner: user,
+      reputation: 5.0,
     });
-    this.logger.log(`Creating store "${dto.name}" for user ${user.id}`);
-    return await this.storeRepository.save(store);
+
+    this.logger.log(`Creating store "${dto.name}" for user #${user.id}`);
+    return this.storeRepo.save(store);
   }
 
   async findStoreById(id: number): Promise<Store> {
-    const store = await this.storeRepository.findOne({
+    const store = await this.storeRepo.findOne({
       where: { id },
-      relations: ['owner'],
+      relations: ['owner', 'addresses', 'products'],
     });
+
     if (!store) {
-      throw new NotFoundException(`Store with id ${id} not found`);
+      throw new NotFoundException(`Store with ID ${id} not found.`);
     }
+
     return store;
   }
 
   async updateStoreAddress(
     user: User,
-    id: number,
-    dto: CreateStoreLocationDto,
+    storeId: number,
+    dto: AddressDto,
   ): Promise<Store> {
-    const store = await this.findStoreById(id);
-    Object.assign(store, dto);
-    this.logger.log(`Updating location for store ID ${id}`);
-    return await this.storeRepository.save(store);
+    const store = await this.findStoreById(storeId);
+
+    const address = this.addressRepo.create({
+      ...dto,
+      store,
+    });
+
+    await this.addressRepo.save(address);
+
+    this.logger.log(`Address added to store #${storeId} by user #${user.id}`);
+
+    return this.findStoreById(storeId); // return updated store
   }
 
   async updateStoreTags(
     user: User,
-    id: number,
-    dto: CreateStoreCategoryDto,
+    storeId: number,
+    dto: CreateStoreTagsDto,
   ): Promise<Store> {
-    const store = await this.findStoreById(id);
-    store.category = dto.category;
-    this.logger.log(`Updating category for store ID ${id} to ${dto.category}`);
-    return await this.storeRepository.save(store);
+    const store = await this.findStoreById(storeId);
+    store.tags = dto.tags;
+    this.logger.log(`Updated tags for store #${storeId}: ${store.tags}`);
+    return this.storeRepo.save(store);
   }
 
   async updateStoreWorkingHours(
     user: User,
-    id: number,
+    storeId: number,
     dto: CreateStoreWorkingHoursDto,
   ): Promise<Store> {
-    const store = await this.findStoreById(id);
+    const store = await this.findStoreById(storeId);
+
     if (dto.workingHours) {
       this.validateWorkingHours(dto.workingHours);
+      store.workingHours = dto.workingHours;
     }
-    store.workingHours = dto.workingHours;
-    this.logger.log(`Updating working hours for store ID ${id}`);
-    return await this.storeRepository.save(store);
+
+    this.logger.log(`Updated working hours for store #${storeId}`);
+    return this.storeRepo.save(store);
   }
 
   async uploadStoreLogo(
     user: User,
-    id: number,
+    storeId: number,
     file: Express.Multer.File,
   ): Promise<Store> {
-    const store = await this.findStoreById(id);
-    const fileExtension = file.originalname.split('.').pop();
-    const fileKey = `stores/${store.id}/${randomUUID()}.${fileExtension}`;
+    const store = await this.findStoreById(storeId);
+
+    const ext = file.originalname.split('.').pop();
+    const fileKey = `stores/${store.id}/${randomUUID()}.${ext}`;
 
     try {
-      const command = new PutObjectCommand({
-        Bucket: this.bucketName,
-        Key: fileKey,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ACL: 'public-read',
-      });
-      await this.s3Client.send(command);
-    } catch (error) {
-      this.logger.error('Error uploading file to S3:', error);
-      throw new InternalServerErrorException('Failed to upload file to S3');
+      await this.s3Client.send(
+        new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: fileKey,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+          ACL: 'public-read',
+        }),
+      );
+    } catch (err) {
+      this.logger.error('S3 Upload Failed', err);
+      throw new InternalServerErrorException('Failed to upload logo');
     }
 
-    store.logoUrl = `https://${this.bucketName}.${this.s3ApiEndpoint}/${fileKey}`;
-    this.logger.log(`Uploaded new logo for store ID ${id}`);
-    return await this.storeRepository.save(store);
+    store.logoUrl = `https://${this.bucketName}.${this.s3Endpoint}/${fileKey}`;
+    this.logger.log(`Uploaded logo for store #${storeId}`);
+    return this.storeRepo.save(store);
   }
 
   async updateStore(
     user: User,
-    id: number,
-    dto: UpdateStoreDto,
+    storeId: number,
+    dto: UpdateStore,
   ): Promise<Store> {
-    const store = await this.findStoreById(id);
-    this.logger.log(
-      `Updating store ID ${id} with data: ${JSON.stringify(dto)}`,
-    );
+    const store = await this.findStoreById(storeId);
     Object.assign(store, dto);
-    return await this.storeRepository.save(store);
+    this.logger.log(`Updated general info for store #${storeId}`);
+    return this.storeRepo.save(store);
   }
 
   private validateWorkingHours(
-    workingHours: Record<string, { open: string; close: string }>,
+    hours: Record<string, { open: string; close: string }>,
   ): void {
-    for (const day in workingHours) {
-      const { open, close } = workingHours[day];
-      const [openHour, openMin] = open.split(':').map(Number);
-      const [closeHour, closeMin] = close.split(':').map(Number);
-      const openTotal = openHour * 60 + openMin;
-      const closeTotal = closeHour * 60 + closeMin;
-      if (openTotal >= closeTotal) {
+    for (const day of Object.keys(hours)) {
+      const { open, close } = hours[day];
+      const [oh, om] = open.split(':').map(Number);
+      const [ch, cm] = close.split(':').map(Number);
+
+      const openMinutes = oh * 60 + om;
+      const closeMinutes = ch * 60 + cm;
+
+      if (openMinutes >= closeMinutes) {
         throw new BadRequestException(
-          `Invalid working hours for ${day}: open time must be before close time.`,
+          `Invalid working hours for ${day}: opening time must be before closing time.`,
         );
       }
     }

@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Store } from '../../stores/store.entity';
+import { Store } from '../../stores/entities/store.entity';
 import { ProductAttribute } from './product-attribute.entity';
 import { ProductVariant } from './product-variant.entity';
 import { Review } from '../../reviews/entities/review.entity';

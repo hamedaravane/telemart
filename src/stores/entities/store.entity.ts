@@ -4,6 +4,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinColumn,
   JoinTable,
   ManyToMany,
   ManyToOne,
@@ -16,6 +17,18 @@ import { User } from '@/users/user.entity';
 import { Product } from '@/products/entities/product.entity';
 import { Order } from '@/orders/entities/order.entity';
 import { Address } from '@/locations/entities/address.entity';
+import { StoreSocialLink } from '@/stores/entities/social-media-link.entity';
+
+type Weekday =
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday'
+  | 'sunday';
+
+type WorkingHours = Record<Weekday, { open: string; close: string }>;
 
 @Entity('stores')
 export class Store {
@@ -40,14 +53,19 @@ export class Store {
   logoUrl?: string;
 
   @ApiPropertyOptional({ description: 'Store description' })
-  @Column({ nullable: true, type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description?: string;
 
-  @ApiProperty({ type: () => User })
+  @ApiProperty({ type: () => User, description: 'Owner of the store' })
   @ManyToOne(() => User, (user) => user.stores, { onDelete: 'CASCADE' })
+  @JoinColumn()
   owner: User;
 
-  @ApiProperty({ type: () => User, isArray: true })
+  @ApiProperty({
+    type: () => User,
+    isArray: true,
+    description: 'Store admins (pending StoreMember refactor)',
+  })
   @ManyToMany(() => User)
   @JoinTable()
   admins: User[];
@@ -58,46 +76,48 @@ export class Store {
   @OneToMany(() => Order, (order) => order.store)
   orders: Order[];
 
-  @ApiProperty({ example: '+1234567890', required: false })
-  @Column({ nullable: true, length: 20 })
+  @ApiPropertyOptional({ example: '+1234567890' })
+  @Column({ length: 20, nullable: true })
   contactNumber?: string;
 
-  @ApiProperty({ example: 'store@example.com', required: false })
+  @ApiPropertyOptional({ example: 'store@example.com' })
   @Column({ nullable: true })
   email?: string;
 
   @OneToMany(() => Address, (address) => address.store)
   addresses?: Address[];
 
-  @ApiPropertyOptional({
-    description: 'Store social media links',
-    example: {
-      instagram: 'https://instagram.com/store',
-      facebook: 'https://facebook.com/store',
-    },
-  })
-  @Column({ nullable: true, type: 'simple-json' })
-  socialMediaLinks?: Record<string, string>;
+  @OneToMany(() => StoreSocialLink, (link) => link.store, { cascade: true })
+  @ApiProperty({ type: () => [StoreSocialLink] })
+  socialMediaLinks?: StoreSocialLink[];
 
-  @ApiProperty({ example: 4.7, description: 'Reputation score (1–5)' })
+  @ApiProperty({
+    example: 4.7,
+    description: 'Store reputation score (1.0 – 5.0)',
+    minimum: 1,
+    maximum: 5,
+  })
   @Column({ type: 'decimal', precision: 3, scale: 2, default: 5.0 })
   reputation: number;
 
   @ApiPropertyOptional({
+    description: 'Weekly working hours by day',
     example: {
       monday: { open: '09:00', close: '18:00' },
       sunday: { open: '11:00', close: '15:00' },
     },
-    description: 'Working hours by weekday',
   })
-  @Column({ nullable: true, type: 'json' })
-  workingHours?: Record<string, { open: string; close: string }>;
+  @Column({ type: 'json', nullable: true })
+  workingHours?: WorkingHours;
 
-  @ApiProperty({ example: ['tech', 'gaming'], required: false })
-  @Column({ nullable: true, type: 'simple-array' })
+  @ApiPropertyOptional({
+    example: ['tech', 'gaming'],
+    description: 'Store tags (categories, topics)',
+  })
+  @Column({ type: 'simple-array', nullable: true })
   tags?: string[];
 
-  @ApiProperty({ example: true })
+  @ApiProperty({ example: true, description: 'Is the store currently active?' })
   @Column({ default: true })
   isActive: boolean;
 

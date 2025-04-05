@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { User } from '@/users/user.entity';
-import { Store } from '@/stores/store.entity';
+import { Store } from '@/stores/entities/store.entity';
 import { Country } from './country.entity';
 import { State } from './state.entity';
 import { City } from './city.entity';

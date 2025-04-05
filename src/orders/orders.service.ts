@@ -11,7 +11,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { OrderItem } from './entities/order-item.entity';
 import { ProductsService } from '../products/products.service';
-import { Store } from '../stores/store.entity';
+import { Store } from '../stores/entities/store.entity';
 
 @Injectable()
 export class OrdersService {

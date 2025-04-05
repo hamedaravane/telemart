@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { StoresService } from '../stores/stores.service';
 import { ProductsService } from '../products/products.service';
-import { mapStorePreview, Store } from '../stores/store.entity';
+import { mapStorePreview, Store } from '../stores/entities/store.entity';
 import {
   mapProductPreview,
   Product,
